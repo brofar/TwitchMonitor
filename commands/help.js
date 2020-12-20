@@ -1,7 +1,7 @@
+// Multi-guild support: Done.
+
 const Discord = require('discord.js');
 const fs = require('fs');
-
-const prefix = process.env.DISCORD_PREFIX;
 
 class Help {
 
@@ -10,7 +10,7 @@ class Help {
   }
 
   static helptext() {
-    return `Lists all the bot commands. You can also do \`\`${prefix}${this.name.toString().trim().toLowerCase()} commandname\`\` for more help with a particular command.`;
+    return `Lists all the bot commands. You can also do \`\`${this.name.toString().trim().toLowerCase()} commandname\`\` for more help with a particular command.`;
   }
 
 	static execute(message, args, guildConfig) {
@@ -26,7 +26,7 @@ class Help {
       const command = require(`./${args[0]}.js`);
       var cmdName = command.name.toString().trim().toLowerCase();
       let helptext = typeof command.helptext === 'function' ? command.helptext() : ""; 
-      msgEmbed.addField(`${prefix}${cmdName}`, helptext);
+      msgEmbed.addField(`${cmdName}`, helptext);
     } else { //List all commands
       // grab all the command files from the command directory
       for (const file of commandFiles) {
@@ -40,12 +40,13 @@ class Help {
         // Clever way to check if the category exists
         // and create it if not.
         if((cmdCategory in commandList) || (commandList[cmdCategory] = [])) {
-          commandList[cmdCategory].push(`\`\`${prefix}${cmdName}\`\``);
+          commandList[cmdCategory].push(`\`\`${cmdName}\`\``);
         }
       }
 
       console.log(`[Help]`, `Discovered ${commandFiles.length} command file(s).`);
 
+      msgEmbed.addField("Set Up", "Use the `setchannel` command to specify where updates should go.");
       msgEmbed.addField("Commands", "Commands can only be executed by users with  Administrator permissions.");
       for (const [category, cmdList] of Object.entries(commandList)) {
         msgEmbed.addField(`${category} commands`, cmdList.join(', '));
@@ -55,7 +56,7 @@ class Help {
     // Send response to Discord
     message.channel.send(msgEmbed)
       .catch((err) => {
-          console.log('[Help]', `Could not send msg to #${message.channel.name}`, err.message);
+          console.log('[Help]', `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
       });
   }
 }

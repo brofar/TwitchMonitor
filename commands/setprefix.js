@@ -1,3 +1,5 @@
+// Multi-guild support: Done.
+
 const Discord = require('discord.js');
 const DiscordGuild = require('../discord-guild');
 

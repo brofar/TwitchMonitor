@@ -1,3 +1,6 @@
+// Multi-guild support: Done.
+// TODO: Upon set channel, delete all other messages for this guild then do immediate refresh
+
 const MiniDb = require('../minidb');
 const Discord = require('discord.js');
 const DiscordGuild = require('../discord-guild');
@@ -6,7 +9,6 @@ const prefix = process.env.DISCORD_PREFIX;
 /* 
 * Sets the announcement channel for a guild
 */
-
 
 class SetChannel {
   static category() {
@@ -19,7 +21,7 @@ class SetChannel {
 
 	static execute(message, args, guildConfig) {
     // Get the guild in which the message was sent
-    this._guild = new DiscordGuild(message.guild);
+    this._guild = guildConfig;
 
     // Set up the return message
     let returnMessage = "";

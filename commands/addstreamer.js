@@ -1,7 +1,8 @@
+// TODO: Switch from a global list to just individual guild lists.
+
 const MiniDb = require('../minidb');
 const Discord = require('discord.js');
 const DiscordGuild = require('../discord-guild');
-const prefix = process.env.DISCORD_PREFIX;
 
 /* 
 * Adds a streamer to a server's watch list
@@ -9,14 +10,13 @@ const prefix = process.env.DISCORD_PREFIX;
 * Check to ensure channel is configured first
 */
 
-
 class AddStreamer {
   static category() {
     return "Twitch";
   }
 
   static helptext() {
-    return `Adds a Twitch streamer to the watch list. You can specify multiple space-separated Twitch handles for quick addition. Usage: \`\`${prefix}${this.name.toString().trim().toLowerCase()} twitchhandle1\`\` or \`\`${prefix}${this.name.toString().trim().toLowerCase()} twitchhandle1 twitchhandle2\`\`.`;
+    return `Adds a Twitch streamer to the watch list. You can specify multiple space-separated Twitch handles for quick addition. Usage: \`\`${this.name.toString().trim().toLowerCase()} twitchhandle1\`\` or \`\`${this.name.toString().trim().toLowerCase()} twitchhandle1 twitchhandle2\`\`.`;
   }
 
 	static execute(message, args, guildConfig) {
@@ -95,10 +95,10 @@ class AddStreamer {
 
     message.channel.send(msgToSend, msgOptions)
         .then((message) => {
-            console.log('[Discord-Add]', `${result.added.length} added. ${result.skipped.length} duplicates.`)
+            console.log('[Discord-Add]', `[${message.guild.name}]`, `${result.added.length} added. ${result.skipped.length} duplicates.`)
         })
         .catch((err) => {
-            console.log('[Discord-Add]', message.guild.name, `Could not send msg to #${message.channel.name}`, err.message);
+            console.log('[Discord-Add]', `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
         });
 	}
 }

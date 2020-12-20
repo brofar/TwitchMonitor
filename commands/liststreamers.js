@@ -1,3 +1,5 @@
+// Multi-guild support: Done.
+
 const MiniDb = require('../minidb');
 const Discord = require('discord.js');
 const prefix = process.env.DISCORD_PREFIX;
@@ -13,11 +15,11 @@ class ListStreamers {
   }
 
   static execute(message, args, guildConfig) {
+    // Get the guild in which the message was sent
+    this._guild = guildConfig;
+    this._guildData = this._guild.get('watch-list') || { };
+    let watchedUsers = this._guildData['usernames'] || [ ];
 
-    this._userDb = new MiniDb("twitch-users");
-    this._userData = this._userDb.get("watch-list") || {};
-
-    let watchedUsers = this._userData['usernames'] || [];
     watchedUsers.sort();
 
     let msgEmbed = new Discord.MessageEmbed();
@@ -34,10 +36,10 @@ class ListStreamers {
 
     message.channel.send(msgToSend, msgOptions)
       .then((message) => {
-        console.log('[Discord-List]', `${watchedUsers.length} users listed.`);
+        console.log('[Discord-List]', `[${message.guild.name}]`, `${watchedUsers.length} users listed.`);
       })
       .catch((err) => {
-        console.log('[Discord-List]', `Could not send msg to #${message.channel.name}`, err.message);
+        console.log('[Discord-List]', `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
       });
   }
 }
