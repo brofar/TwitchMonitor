@@ -33,6 +33,7 @@ class TwitchApi {
   }
 
   static fetchStreams(channelNames) {
+    if(channelNames.length == 0) return Promise.reject("No channels specified.");
     return new Promise((resolve, reject) => {
       axios.get(`/streams?user_login=${channelNames.join('&user_login=')}`, this.requestOptions)
         .then((res) => {
@@ -46,6 +47,7 @@ class TwitchApi {
   }
 
   static fetchUsers(channelNames) {
+    if(channelNames.length == 0) return Promise.reject("No channels specified.");
     return new Promise((resolve, reject) => {
       axios.get(`/users?login=${channelNames.join('&login=')}`, this.requestOptions)
         .then((res) => {
@@ -59,6 +61,7 @@ class TwitchApi {
   }
 
   static fetchGames(gameIds) {
+    if(channelNames.length == 0) return Promise.reject("No games specified.");
     return new Promise((resolve, reject) => {
       axios.get(`/games?id=${gameIds.join('&id=')}`, this.requestOptions)
         .then((res) => {

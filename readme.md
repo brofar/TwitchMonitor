@@ -15,11 +15,10 @@ Much of the code (and like 100% of the installation instructions below) was used
 ## To Do
 * ~~Multi-server support~~
 * discord-guild.js: Handle null template (throw exception?)
-* Change bot options via commmands
+* ~~Change bot options via commmands~~
   * ~~Set channel~~
-  * Box art flag
-  * Screenshot flag
-  * etc
+  * ~~Box art flag~~
+  * ~~Screenshot flag~~
 * Bot icon
 * ~~Handle orphanated posts~~
 * ~~Remove streamer from global watch list when no servers are following them.~~
