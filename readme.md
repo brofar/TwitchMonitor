@@ -23,7 +23,7 @@ Much of the code (and like 100% of the installation instructions below) was used
 * Bot icon
 * Handle orphanated posts
 * Remove streamer from global watch list when no servers are following them.
-* Update installation instructions on how to use Google Cloud free tier
+* Update installation instructions on how to use Google Cloud free tier (https://www.writebots.com/discord-bot-hosting/)
 
 ## Future Functionality
 * Add feature to automatically monitor users in a certain Discord role (pull linked Twitch account)
