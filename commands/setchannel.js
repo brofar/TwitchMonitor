@@ -16,7 +16,7 @@ class SetChannel {
   }
 
   static helptext() {
-    return `.`;
+    return `Sets the channel to announce streams.`;
   }
 
 	static execute(message, args, guildConfig) {
@@ -56,10 +56,10 @@ class SetChannel {
 
     message.channel.send(msgToSend, msgOptions)
         .then((message) => {
-            console.log('[Discord-SetChannel]', `[${message.guild.name}]`, `${returnMessage}`)
+            console.log('[SetChannel]', `[${message.guild.name}]`, `${returnMessage}`)
         })
         .catch((err) => {
-            console.log('[Discord-SetChannel]', `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+            console.log('[SetChannel]', `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
         });
 	}
 }

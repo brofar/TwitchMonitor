@@ -24,7 +24,7 @@ class SetPrefix {
       let msgEmbed = new Discord.MessageEmbed()
         .setColor("#FD6A02")
         .setTitle(`**Twitch Monitor**`)
-        .addField(`Previx`, `Bot prefix set to ${newPrefix}`, true);
+        .addField(`Prefix`, `Bot prefix set to ${newPrefix}`, true);
     
       message.channel.send(msgEmbed)
           .then((message) => {
