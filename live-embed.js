@@ -27,11 +27,6 @@ class LiveEmbed {
       // Title
       msgEmbed.setTitle(`:red_circle: **${streamData.user_name} is live on Twitch!**`);
       msgEmbed.addField("Title", streamData.title, false);
-    } else {
-      msgEmbed.setTitle(`:white_circle: ${streamData.user_name} was live on Twitch.`);
-      msgEmbed.setDescription('The stream has now ended.');
-
-      msgEmbed.addField("Title", streamData.title, true);
     }
 
     // Add game
@@ -45,8 +40,8 @@ class LiveEmbed {
 
       // Set main image (stream preview)
       let imageUrl = streamData.thumbnail_url;
-      imageUrl = imageUrl.replace("{width}", "1280");
-      imageUrl = imageUrl.replace("{height}", "720");
+      imageUrl = imageUrl.replace("{width}", "480");
+      imageUrl = imageUrl.replace("{height}", "270");
       let thumbnailBuster = (Date.now() / 1000).toFixed(0);
       imageUrl += `?t=${thumbnailBuster}`;
       msgEmbed.setImage(imageUrl);

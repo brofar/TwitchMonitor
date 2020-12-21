@@ -8,6 +8,7 @@ const moment = require('moment');
 class TwitchMonitor {
     static __init() {
         this._userDb = new MiniDb("twitch-users");
+        this._guildDb = new MiniDb("guilds");
         this._gameDb = new MiniDb("twitch-games");
 
         this._lastUserRefresh = this._userDb.get("last-update") || null;
@@ -17,9 +18,6 @@ class TwitchMonitor {
         this._pendingGameRefresh = false;
         this._gameData = this._gameDb.get("game-list") || { };
         this._watchingGameIds = [];
-
-        
-        this._watchData = this._userDb.get("watch-list") || { };
     }
 
     static start() {
@@ -47,10 +45,18 @@ class TwitchMonitor {
 
     static loadChannels() {
       // Reload the file
-      this._watchData = this._userDb.get("watch-list") || { };
+      let guildData = this._guildDb.get("guilds") || { };
+
+      // Output Array
+      let channels = [ ];
+
+      // Loop through the guilds and build our array of watched streamers (deduplicated)
+      for (const guild in guildData) {
+        channels = [...new Set([...channels,...guildData[guild]['watch-list']['usernames']])]
+      }
 
       // Load channel names from db
-      this.channelNames = this._watchData['usernames'] || [ ];
+      this.channelNames = channels;
 
       //console.log('[TwitchMonitor]', `Polling channels:`, this.channelNames.join(', '));
       console.log('[TwitchMonitor]', `Polling ${this.channelNames.length} channels`);
@@ -76,6 +82,7 @@ class TwitchMonitor {
               })
               .catch((err) => {
                   console.warn('[TwitchMonitor]', 'Error in users refresh:', err);
+                  DmBotOwner(`[TwitchMonitor] Error in users refresh: ${err}`, client);
               })
               .then(() => {
                   if (this._pendingUserRefresh) {
@@ -92,6 +99,7 @@ class TwitchMonitor {
               })
               .catch((err) => {
                   console.warn('[TwitchMonitor]', 'Error in games refresh:', err);
+                  DmBotOwner(`[TwitchMonitor] Error in games refresh: ${err}`, client);
               })
               .then(() => {
                   if (this._pendingGameRefresh) {
@@ -108,6 +116,7 @@ class TwitchMonitor {
               })
               .catch((err) => {
                   console.warn('[TwitchMonitor]', 'Error in streams refresh:', err);
+                  DmBotOwner(`[TwitchMonitor] Error in streams refresh: ${err}`, client);
               });
         }
     }
@@ -282,6 +291,17 @@ Array.prototype.hasEqualValues = function (b) {
     }
 
     return true;
+}
+
+let DmBotOwner = function (client, msg) {
+  try {
+    client.users.fetch(process.env.DISCORD_BOT_MASTER_USERID)
+      .then((user) => {
+        client.users.cache.get(user.id).send(msg);
+      })
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 

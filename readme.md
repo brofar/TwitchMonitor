@@ -13,13 +13,17 @@ Much of the code (and like 100% of the installation instructions below) was used
 * Discord commands to add/remove/list watched streamers (!addstreamer/!removestreamer/!liststreamers).
 
 ## To Do
-* Multi-server support
+* ~~Multi-server support~~
 * discord-guild.js: Handle null template (throw exception?)
-* Change bot options via commmands (set channel, box art bool, screenshot bool, etc)
+* Change bot options via commmands
+  * ~~Set channel~~
+  * Box art flag
+  * Screenshot flag
+  * etc
 * Bot icon
 * Handle orphanated posts
 * Remove streamer from global watch list when no servers are following them.
-* Update installation instructions
+* Update installation instructions on how to use Google Cloud free tier
 
 ## Future Functionality
 * Add feature to automatically monitor users in a certain Discord role (pull linked Twitch account)
@@ -53,9 +57,11 @@ Configuration options explained:
 |`DISCORD_BOT_TOKEN`|☑|Your bot token, via Discord developer portal (explained below).|
 |`TWITCH_CLIENT_ID`|☑|Client ID for your Twitch app, via developer portal (explained below).|
 |`TWITCH_OAUTH_TOKEN`|☑|OAuth token that grants access to your Twitch app, via `id.twitch.tv` as explained below.|
+|`DISCORD_BOT_MASTER_USERID`| |[Discord ID](https://techswift.org/2020/04/22/how-to-find-your-user-id-on-discord) of the bot's owner (will be DM'd if there are errors).|
 |`DISCORD_PREFIX`|☑|Prefix for the bot's commands.|
 |`TWITCH_CHECK_INTERVAL_MS`| |How often to poll the Twitch API and send or update live embeds.|
 |`TWITCH_USE_BOXART`| |If true, use alternate Live Embed style that includes game boxart as a thumbnail image if available.|
+
 
 ### Getting required tokens
 
