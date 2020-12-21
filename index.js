@@ -180,8 +180,12 @@ let messageHistory = liveMessageDb.get("history") || {};
 function CleanDiscordHistory () {
   console.log('[CleanDiscordHistory]', `Cleaning all posts.`);
 
-  for (const messageId in messageHistory) {
-    discordChannel.messages.fetch(messageId)
+  for (const liveMsgDiscrim in messageHistory) {
+    let [guild, channel, twitch] = liveMsgDiscrim.split('_');
+    let dChannel = DiscordChannelSync.getChannel(client, guild, channel, true);
+    let messageId = messageHistory[liveMsgDiscrim];
+
+    dChannel.messages.fetch(messageId)
     .then((existingMsg) => {
       // Delete the message from discord
       existingMsg.delete();
@@ -223,7 +227,7 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
   for (let i = 0; i < targetChannels.length; i++) {
     const discordChannel = targetChannels[i];
 
-    const liveMsgDiscrim = `${discordChannel.guild.id}_${discordChannel.name}_${streamData.id}`;
+    const liveMsgDiscrim = `${discordChannel.guild.id}_${discordChannel.id}_${streamData.id}`;
 
     if (discordChannel) {
       try {
