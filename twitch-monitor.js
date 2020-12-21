@@ -1,5 +1,3 @@
-// TODO: Switch from a global list to just individual guild lists.
-
 const Dotenv = require('dotenv').config();
 const TwitchApi = require('./twitch-api');
 const MiniDb = require('./minidb');

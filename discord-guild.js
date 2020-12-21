@@ -60,6 +60,17 @@ class DiscordGuild {
     return guildConfig;
   }
 
+  // Remove a guild config
+  remove () {
+    let guildConfig = this._guildDb;
+    if(guildConfig.hasOwnProperty(this.guild.id)) {
+      delete guildConfig[this.guild.id];
+      
+      // Update the file
+      this._config.put("guilds", guildConfig);
+    }
+  }
+
   // Get a value from the guild config
   get(property) {
     let guildConfig = this._guildDb[this.guild.id];

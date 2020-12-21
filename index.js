@@ -60,7 +60,8 @@ client.on('ready', () => {
 client.on("guildCreate", guild => {
   console.log(`[Discord]`,`[${guild.name}]`, `Joined new server: ${guild.name}`);
 
-  let thisGuild = new DiscordGuild(guild);
+  // Create guild object.
+  let _ = new DiscordGuild(guild);
   console.log(`[Discord]`,`[${guild.name}]`, `Created configuration for ${guild.name}`);
 
   syncServerList(false);
@@ -69,6 +70,10 @@ client.on("guildCreate", guild => {
 // Removed from a server
 client.on("guildDelete", guild => {
   console.log(`[Discord]`, `Removed from a server: ${guild.name}`);
+
+  let dGuild = new DiscordGuild(guild);
+  dGuild.remove();
+  console.log(`[Discord]`,`[${guild.name}]`, `Deleted configuration for ${guild.name}`);
 
   syncServerList(false);
 });
