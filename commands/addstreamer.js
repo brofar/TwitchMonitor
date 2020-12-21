@@ -1,5 +1,3 @@
-// TODO: Switch from a global list to just individual guild lists.
-
 const MiniDb = require('../minidb');
 const Discord = require('discord.js');
 const DiscordGuild = require('../discord-guild');
@@ -24,12 +22,6 @@ class AddStreamer {
     this._guild = guildConfig;
     this._guildData = this._guild.get('watch-list') || { };
     let guildWatchedUsers = this._guildData['usernames'] || [ ];
-
-    // Get global watch list
-    this._globalDb = new MiniDb("twitch-users");
-    this._globalData = this._globalDb.get("watch-list") || { };
-    let globalWatchedUsers = this._globalData['usernames'] || [ ];
-
 
     let result = {"added" : [], "skipped": []};
 
@@ -57,21 +49,11 @@ class AddStreamer {
         guildWatchedUsers.push(userToAdd);
         console.log('[Discord-Add]', `[${message.guild.name}]`, `Added ${userToAdd} to guild watch list.`);
 
-        // ...and if they're not already on the GLOBAL list, add them
-        if(globalWatchedUsers.indexOf(userToAdd) === -1) {
-          globalWatchedUsers.push(userToAdd);
-          console.log('[Discord-Add]', `[${message.guild.name}]`, `Added ${userToAdd} to global watch list.`);
-        }
-
         result.added.push(userToAdd);
       } else {
         result.skipped.push(userToAdd);
       }
     }
-    
-    // Update global list
-    this._globalData['usernames'] = globalWatchedUsers;
-    this._globalDb.put("watch-list", this._globalData);
 
     // Update guild list
     this._guildData['usernames'] = guildWatchedUsers;
