@@ -21,8 +21,8 @@ Much of the code (and like 100% of the installation instructions below) was used
   * Screenshot flag
   * etc
 * Bot icon
-* Handle orphanated posts
-* Remove streamer from global watch list when no servers are following them.
+* ~~Handle orphanated posts~~
+* ~~Remove streamer from global watch list when no servers are following them.~~
 * Update installation instructions on how to use Google Cloud free tier (https://www.writebots.com/discord-bot-hosting/)
 
 ## Future Functionality

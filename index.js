@@ -54,6 +54,9 @@ client.on('ready', () => {
 
   // Begin Twitch API polling
   TwitchMonitor.start();
+
+  // Clean orphan messages
+  CleanDiscordHistory();
 });
 
 // Added to a new server
@@ -174,6 +177,31 @@ class StreamActivity {
 let liveMessageDb = new MiniDb('live-messages');
 let messageHistory = liveMessageDb.get("history") || {};
 
+function CleanDiscordHistory () {
+  console.log('[CleanDiscordHistory]', `Cleaning all posts.`);
+
+  for (const messageId in messageHistory) {
+    discordChannel.messages.fetch(messageId)
+    .then((existingMsg) => {
+      // Delete the message from discord
+      existingMsg.delete();
+
+      // Clean up DB
+      delete messageHistory[liveMsgDiscrim];
+      liveMessageDb.put('history', messageHistory);
+    })
+    .catch((e) => {
+      // Unable to retrieve message object
+      if (e.message === "Unknown Message") {
+        // Specific error: the message does not exist, most likely deleted.
+        delete messageHistory[liveMsgDiscrim];
+        liveMessageDb.put('history', messageHistory);
+      }
+    });
+  }
+  console.log('[CleanDiscordHistory]', `Cleaned all posts.`);
+}
+
 TwitchMonitor.onChannelLiveUpdate((streamData) => {
   const isLive = streamData.type === "live";
 
@@ -195,8 +223,6 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
   for (let i = 0; i < targetChannels.length; i++) {
     const discordChannel = targetChannels[i];
 
-    // TODO: orphan posts
-
     const liveMsgDiscrim = `${discordChannel.guild.id}_${discordChannel.name}_${streamData.id}`;
 
     if (discordChannel) {
@@ -205,7 +231,6 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
         let existingMsgId = messageHistory[liveMsgDiscrim] || null;
 
         let watchedStreamer = discordChannel['watch-list'].includes(streamData.user_name.toLowerCase());
-
 
         // If liveMsgDiscrim exists but streamData.user_name is NOT in channel's list:
         // delete the message, because the streamer was removed by someone.
