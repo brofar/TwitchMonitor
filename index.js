@@ -182,7 +182,7 @@ function CleanDiscordHistory () {
 
   for (const liveMsgDiscrim in messageHistory) {
     let [guild, channel, twitch] = liveMsgDiscrim.split('_');
-    let dChannel = DiscordChannelSync.getChannel(client, guild, channel, true);
+    let dChannel = DiscordChannelSync.getChannel(client, guild, channel, false);
     let messageId = messageHistory[liveMsgDiscrim];
 
     dChannel.messages.fetch(messageId)
