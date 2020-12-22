@@ -73,7 +73,7 @@ class TwitchMonitor {
         console.log('[Twitch]', ' ▪ ▪ ▪ ▪ ▪ ', `Refreshing now (${reason ? reason : "No reason"})`, ' ▪ ▪ ▪ ▪ ▪ ');
 
         // Refresh all users periodically
-        if (this._lastUserRefresh === null || now.diff(moment(this._lastUserRefresh), 'minutes') >= 10) {
+        if ((this._lastUserRefresh === null || now.diff(moment(this._lastUserRefresh), 'minutes') >= 10) && this.channelNames.length > 0) {
             TwitchApi.fetchUsers(this.channelNames)
               .then((users) => {
                   this.handleUserList(users);
@@ -91,6 +91,9 @@ class TwitchMonitor {
 
         // Refresh all games if needed
         if (this._pendingGameRefresh) {
+
+          // Don't send an empty request
+          if(this._watchingGameIds.length > 0) {
             TwitchApi.fetchGames(this._watchingGameIds)
               .then((games) => {
                   this.handleGameList(games);
@@ -104,10 +107,11 @@ class TwitchMonitor {
                       this._pendingGameRefresh = false;
                   }
               });
+          }
         }
 
         // Refresh all streams
-        if (!this._pendingUserRefresh && !this._pendingGameRefresh) {
+        if (!this._pendingUserRefresh && !this._pendingGameRefresh && this.channelNames.length > 0) {
             TwitchApi.fetchStreams(this.channelNames)
               .then((channels) => {
                   this.handleStreamList(channels);
