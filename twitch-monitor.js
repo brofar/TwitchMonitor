@@ -124,12 +124,13 @@ class TwitchMonitor {
         let gotChannelNames = [];
 
         users.forEach((user) => {
-            const channelName = user.login.toLowerCase();
+          
+          const channelName = user.login.toLowerCase();
 
-            let prevUserData = this._userData[channelName] || { };
-            this._userData[channelName] = Object.assign({ }, prevUserData, user);
+          let prevUserData = this._userData[channelName] || { };
+          this._userData[channelName] = Object.assign({ }, prevUserData, user);
 
-            gotChannelNames.push(user.display_name);
+          gotChannelNames.push(user.display_name);
         });
 
         if (gotChannelNames.length) {
