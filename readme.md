@@ -23,6 +23,19 @@ Much of the code (and like 100% of the installation instructions below) was used
 * ~~Handle orphanated posts~~
 * ~~Remove streamer from global watch list when no servers are following them.~~
 * Update installation instructions on how to use Google Cloud free tier (https://www.writebots.com/discord-bot-hosting/)
+* DM Bot Master on errors:
+```
+let DmBotOwner = function (client, msg) {
+  try {
+    client.users.fetch(process.env.DISCORD_BOT_MASTER_USERID)
+      .then((user) => {
+        client.users.cache.get(user.id).send(msg);
+      })
+  } catch (error) {
+    console.error(error);
+  }
+}
+```
 
 ## Future Functionality
 * Add feature to automatically monitor users in a certain Discord role (pull linked Twitch account)

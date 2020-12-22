@@ -80,7 +80,6 @@ class TwitchMonitor {
               })
               .catch((err) => {
                   console.warn('[TwitchMonitor]', 'Error in users refresh:', err);
-                  DmBotOwner(`[TwitchMonitor] Error in users refresh: ${err}`, client);
               })
               .then(() => {
                   if (this._pendingUserRefresh) {
@@ -100,7 +99,6 @@ class TwitchMonitor {
               })
               .catch((err) => {
                   console.warn('[TwitchMonitor]', 'Error in games refresh:', err);
-                  DmBotOwner(`[TwitchMonitor] Error in games refresh: ${err}`, client);
               })
               .then(() => {
                   if (this._pendingGameRefresh) {
@@ -118,7 +116,6 @@ class TwitchMonitor {
               })
               .catch((err) => {
                   console.warn('[TwitchMonitor]', 'Error in streams refresh:', err);
-                  DmBotOwner(`[TwitchMonitor] Error in streams refresh: ${err}`, client);
               });
         }
     }
@@ -294,18 +291,6 @@ Array.prototype.hasEqualValues = function (b) {
 
     return true;
 }
-
-let DmBotOwner = function (client, msg) {
-  try {
-    client.users.fetch(process.env.DISCORD_BOT_MASTER_USERID)
-      .then((user) => {
-        client.users.cache.get(user.id).send(msg);
-      })
-  } catch (error) {
-    console.error(error);
-  }
-}
-
 
 TwitchMonitor.activeStreams = [];
 TwitchMonitor.streamData = { };
