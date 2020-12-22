@@ -3,5 +3,6 @@
   "discordPrefix" : "`",
   "useBoxArt" : true,
   "useScreenShot" : true,
-  "watch-list": {"usernames" : []}
+  "watched-roles": [],
+  "watch-list": {"usernames" : [], "usernames-from-roles" : []}
 }

@@ -4,7 +4,7 @@ const MiniDb = require('../minidb');
 const Discord = require('discord.js');
 const prefix = process.env.DISCORD_PREFIX;
 
-class ListStreamers {
+class StreamerList {
   
   static category() {
     return "Twitch";
@@ -44,4 +44,4 @@ class ListStreamers {
   }
 }
 
-module.exports = ListStreamers;
+module.exports = StreamerList;

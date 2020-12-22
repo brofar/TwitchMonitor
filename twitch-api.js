@@ -61,7 +61,7 @@ class TwitchApi {
   }
 
   static fetchGames(gameIds) {
-    if(channelNames.length == 0) return Promise.reject("No games specified.");
+    if(gameIds.length == 0) return Promise.reject("No games specified.");
     return new Promise((resolve, reject) => {
       axios.get(`/games?id=${gameIds.join('&id=')}`, this.requestOptions)
         .then((res) => {

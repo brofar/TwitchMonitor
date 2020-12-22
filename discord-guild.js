@@ -60,6 +60,21 @@ class DiscordGuild {
     return guildConfig;
   }
 
+  getWatchedRoleMembers () {
+    let watchedRoles = this.guildConfig['watched-roles'] || [];
+    
+    // Return if there's nothing to process
+    if(watchedRoles.length == 0) return watchedRoles;
+
+    watchedRoles.forEach(roleId => {
+      //console.log(this.guild.roles.fetch(roleId));
+      let members = this.guild.members.cache.filter(member => member.roles.cache.find(role => role.id == roleId)).map(member => member.user.tag);
+
+      console.log(members);
+    });
+
+  }
+
   // Remove a guild config
   remove () {
     let guildConfig = this._guildDb;
