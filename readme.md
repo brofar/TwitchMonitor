@@ -13,18 +13,19 @@ Much of the code (and like 100% of the installation instructions below) was used
 * Discord commands to add/remove/list watched streamers (!addstreamer/!removestreamer/!liststreamers).
 
 ## To Do
-* ~~Multi-server support~~
-* Handle > 100 twitch users (i.e. pagination)
-* discord-guild.js: Handle null template (throw exception?)
-* ~~Change bot options via commmands~~
-  * ~~Set channel~~
-  * ~~Box art flag~~
-  * ~~Screenshot flag~~
-* Bot icon
-* ~~Handle orphanated posts~~
-* ~~Remove streamer from global watch list when no servers are following them.~~
-* Update installation instructions on how to use Google Cloud free tier (https://www.writebots.com/discord-bot-hosting/)
-* DM Bot Master on errors:
+* MVP
+  * ~~Multi-server support~~
+  * ~~Handle > 100 twitch users (i.e. pagination)~~
+  * ~~Change bot options via commmands~~
+    * ~~Set channel~~
+    * ~~Box art flag~~
+    * ~~Screenshot flag~~
+  * ~~Handle orphanated posts~~
+  * ~~Remove streamer from global watch list when no servers are following them.~~
+* Enhancements
+  * discord-guild.js: Handle null template (throw exception?)
+  * Update installation instructions on how to use Google Cloud free tier (https://www.writebots.com/discord-bot-hosting/)
+  * DM Bot Master on errors:
 ```
 let DmBotOwner = function (client, msg) {
   try {
