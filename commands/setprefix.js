@@ -28,10 +28,10 @@ class SetPrefix {
     
       message.channel.send(msgEmbed)
           .then((message) => {
-              console.log('[SetPrefix]', `[${message.guild.name}]`, `Set bot prefix to ${newPrefix}.`)
+              console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Set bot prefix to ${newPrefix}.`)
           })
           .catch((err) => {
-              console.log('[SetPrefix]', `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+              console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
           });
     }
 	}

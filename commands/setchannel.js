@@ -56,10 +56,10 @@ class SetChannel {
 
     message.channel.send(msgToSend, msgOptions)
         .then((message) => {
-            console.log('[SetChannel]', `[${message.guild.name}]`, `${returnMessage}`)
+            console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${returnMessage}`)
         })
         .catch((err) => {
-            console.log('[SetChannel]', `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+            console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
         });
 	}
 }

@@ -70,10 +70,10 @@ class RmStreamer {
 
     message.channel.send(msgToSend, msgOptions)
       .then((message) => {
-        console.log('[Discord-Rem]', `[${message.guild.name}]`, `${deletedUsers.length} deleted. ${nonExistant.length} skipped.`)
+        console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${deletedUsers.length} deleted. ${nonExistant.length} skipped.`)
       })
       .catch((err) => {
-        console.log('[Discord-Rem]', `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+        console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
       });
   }
 }

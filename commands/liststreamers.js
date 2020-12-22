@@ -36,10 +36,10 @@ class ListStreamers {
 
     message.channel.send(msgToSend, msgOptions)
       .then((message) => {
-        console.log('[Discord-List]', `[${message.guild.name}]`, `${watchedUsers.length} users listed.`);
+        console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${watchedUsers.length} users listed.`);
       })
       .catch((err) => {
-        console.log('[Discord-List]', `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+        console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
       });
   }
 }

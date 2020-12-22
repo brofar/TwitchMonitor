@@ -35,7 +35,7 @@ class Help {
 
         let cmdCategory = typeof command.category === 'function' ? command.category() : "General"; 
 
-        console.log(`[Help]`, `Discovered ${cmdName} command in category ${cmdCategory}.`);
+        console.log(`[${this.name.toString().trim()}]`, `Discovered ${cmdName} command in category ${cmdCategory}.`);
         
         // Clever way to check if the category exists
         // and create it if not.
@@ -44,7 +44,7 @@ class Help {
         }
       }
 
-      console.log(`[Help]`, `Discovered ${commandFiles.length} command file(s).`);
+      console.log(`[${this.name.toString().trim()}]`, `Discovered ${commandFiles.length} command file(s).`);
 
       msgEmbed.addField("Set Up", "Use the `setchannel` command to specify where updates should go.");
       msgEmbed.addField("Commands", "Commands can only be executed by users with  Administrator permissions.");
@@ -56,7 +56,7 @@ class Help {
     // Send response to Discord
     message.channel.send(msgEmbed)
       .catch((err) => {
-          console.log('[Help]', `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+          console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
       });
   }
 }
