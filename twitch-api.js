@@ -32,64 +32,81 @@ class TwitchApi {
     }
   }
 
-  static async fetchStreams (channelNameArray) {
-    let twitchArray = [ ];
-    
-    while (channelNameArray.length > 0) {
-      let channelNames = channelNameArray.slice(0, 100);
-      channelNameArray = channelNameArray.slice(100);
-      
-      axios.get(`/streams?user_login=${channelNames.join('&user_login=')}`, this.requestOptions)
-        .then((res) => {
-          twitchArray = twitchArray.concat(res.data.data || []);
-        })
-        .catch((err) => {
-          this.handleApiError(err);
-          reject(err);
-        }); 
-    }
-
-    return twitchArray;
+  /**
+   * Queries Twitch for Stream info.
+   * 
+   * Twitch only allows requests for 100 users at a time. Recurses through
+   * to retrieve all stream info.
+   *
+   * @param {string[]}   channelNames  Array of channel names to check.
+   * @param {string[]}   [streamData]  Array of results (for recursion).
+   *
+   * @return {string[]}  Array of stream information.
+   */
+  static fetchStreams(channelNames) {
+    return new Promise((resolve, reject) => {
+      let baseUrl = `/streams`;
+      this.getTwitchData (baseUrl, "user_login", channelNames, [ ], resolve, reject);
+    });
   }
 
-  static async fetchUsers (channelNameArray) {
-    let twitchArray = [ ];
-
-    while (channelNameArray.length > 0) {
-      let channelNames = channelNameArray.slice(0, 100);
-      channelNameArray = channelNameArray.slice(100);
-      
-      axios.get(`/users?login=${channelNames.join('&login=')}`, this.requestOptions)
-        .then((res) => {
-          twitchArray = twitchArray.concat(res.data.data || []);
-        })
-        .catch((err) => {
-          this.handleApiError(err);
-          reject(err);
-        }); 
-    }
-
-    return twitchArray;
+  static fetchUsers(channelNames) {
+    return new Promise((resolve, reject) => {
+      let baseUrl = `/users`;
+      this.getTwitchData (baseUrl, "login", channelNames, [ ], resolve, reject);
+    });
   }
 
-  static async fetchGames (gameIdArray) {
-    let twitchArray = [ ];
+  static fetchGames(gameIds) {
+    return new Promise((resolve, reject) => {
+      let baseUrl = `/games`;
+      this.getTwitchData (baseUrl, "id", gameIds, [ ], resolve, reject);
+    });
+  }
 
-    while (gameIdArray.length > 0) {
-      let gameIds = gameIdArray.slice(0, 100);
-      gameIdArray = gameIdArray.slice(100);
-      
-      axios.get(`/games?id=${gameIds.join('&id=')}`, this.requestOptions)
-        .then((res) => {
-          twitchArray = twitchArray.concat(res.data.data || []);
-        })
-        .catch((err) => {
-          this.handleApiError(err);
-          reject(err);
-        }); 
-    }
+  /**
+   * Recursively queries Twitch for info.
+   * 
+   * Twitch only allows requests for 100 objects at a time. Recurses
+   * through to retrieve all info.
+   * 
+   * https://itnext.io/how-to-get-resources-from-paginated-rest-api-d7c20fe2bb0b
+   *
+   * @param {string}    baseUrl     Base URL to query.
+   * @param {string}    paramName   The url parameter's name.
+   * @param {string[]}  paramValues The values of the parameter.
+   * @param {string[]}  twitchData  Array of results (for recursion).
+   * @param {method}    resolve     Promise.resolve method.
+   * @param {method}    reject      Promise.reject method.
+   *
+   * @return {string[]}  Array of stream information.
+   */
+  static getTwitchData (baseUrl, paramName, paramValues, twitchData, resolve, reject) {
 
-    return twitchArray;
+    // Grab first 100 entries
+    let firstHundredValues = paramValues.slice(0, 100);
+
+    // Remainder of entries
+    let remainingValues = paramValues.slice(100)
+
+    // Add parameters to the base URL
+    let url = `${baseUrl}?${paramName}=${firstHundredValues.join(`&${paramName}=`)}`;
+
+    axios.get(url, this.requestOptions)
+      .then(res => {
+        const retrivedInfo = twitchData.concat(res.data.data || [ ]);
+
+        // If we still have remaining values to query, recurse.
+        if (remainingValues.length > 0) {
+          this.getTwitchData(baseUrl, paramName, remainingValues, retrivedInfo, resolve, reject)
+        } else {
+          resolve(retrivedInfo)
+        }
+      })
+      .catch(err => {
+        this.handleApiError(err);
+        reject(err);
+      })
   }
 }
 
