@@ -14,6 +14,7 @@ Much of the code (and like 100% of the installation instructions below) was used
 
 ## To Do
 * ~~Multi-server support~~
+* Handle > 100 twitch users (i.e. pagination)
 * discord-guild.js: Handle null template (throw exception?)
 * ~~Change bot options via commmands~~
   * ~~Set channel~~

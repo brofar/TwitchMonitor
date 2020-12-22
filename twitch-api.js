@@ -32,43 +32,64 @@ class TwitchApi {
     }
   }
 
-  static fetchStreams(channelNames) {
-    return new Promise((resolve, reject) => {
+  static async fetchStreams (channelNameArray) {
+    let twitchArray = [ ];
+    
+    while (channelNameArray.length > 0) {
+      let channelNames = channelNameArray.slice(0, 100);
+      channelNameArray = channelNameArray.slice(100);
+      
       axios.get(`/streams?user_login=${channelNames.join('&user_login=')}`, this.requestOptions)
         .then((res) => {
-          resolve(res.data.data || []);
+          twitchArray = twitchArray.concat(res.data.data || []);
         })
         .catch((err) => {
           this.handleApiError(err);
           reject(err);
-        });
-    });
+        }); 
+    }
+
+    return twitchArray;
   }
 
-  static fetchUsers(channelNames) {
-    return new Promise((resolve, reject) => {
+  static async fetchUsers (channelNameArray) {
+    let twitchArray = [ ];
+
+    while (channelNameArray.length > 0) {
+      let channelNames = channelNameArray.slice(0, 100);
+      channelNameArray = channelNameArray.slice(100);
+      
       axios.get(`/users?login=${channelNames.join('&login=')}`, this.requestOptions)
         .then((res) => {
-          resolve(res.data.data || []);
+          twitchArray = twitchArray.concat(res.data.data || []);
         })
         .catch((err) => {
           this.handleApiError(err);
           reject(err);
-        });
-    });
+        }); 
+    }
+
+    return twitchArray;
   }
 
-  static fetchGames(gameIds) {
-    return new Promise((resolve, reject) => {
+  static async fetchGames (gameIdArray) {
+    let twitchArray = [ ];
+
+    while (gameIdArray.length > 0) {
+      let gameIds = gameIdArray.slice(0, 100);
+      gameIdArray = gameIdArray.slice(100);
+      
       axios.get(`/games?id=${gameIds.join('&id=')}`, this.requestOptions)
         .then((res) => {
-          resolve(res.data.data || []);
+          twitchArray = twitchArray.concat(res.data.data || []);
         })
         .catch((err) => {
           this.handleApiError(err);
           reject(err);
-        });
-    });
+        }); 
+    }
+
+    return twitchArray;
   }
 }
 
