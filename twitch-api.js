@@ -32,76 +32,64 @@ class TwitchApi {
     }
   }
 
-  static fetchStreams(channelNameArray) {
-    return new Promise((resolve, reject) => {
-      let twitchArray = [ ];
-
-      // Twitch limits the streams endpoint to 100 at a time.
-      if(channelNameArray.length > 100) {
-        // Recursively call self with <= 100 usernames
-        twitchArray = twitchArray.concat(TwitchApi.fetchStreams(channelNameArray.slice(100)));
-      }
-
+  static async fetchStreams (channelNameArray) {
+    let twitchArray = [ ];
+    
+    while (channelNameArray.length > 0) {
       let channelNames = channelNameArray.slice(0, 100);
+      channelNameArray = channelNameArray.slice(100);
       
       axios.get(`/streams?user_login=${channelNames.join('&user_login=')}`, this.requestOptions)
         .then((res) => {
           twitchArray = twitchArray.concat(res.data.data || []);
-          resolve(twitchArray);
         })
         .catch((err) => {
           this.handleApiError(err);
           reject(err);
         }); 
-    });
+    }
+
+    return twitchArray;
   }
 
-  static fetchUsers(channelNameArray) {
-    return new Promise((resolve, reject) => {
-      let twitchArray = [ ];
+  static async fetchUsers (channelNameArray) {
+    let twitchArray = [ ];
 
-      // Twitch limits the streams endpoint to 100 at a time.
-      if(channelNameArray.length > 100) {
-        // Recursively call self with <= 100 usernames
-        twitchArray = twitchArray.concat(TwitchApi.fetchStreams(channelNameArray.slice(100)));
-      }
-
+    while (channelNameArray.length > 0) {
       let channelNames = channelNameArray.slice(0, 100);
+      channelNameArray = channelNameArray.slice(100);
       
       axios.get(`/users?login=${channelNames.join('&login=')}`, this.requestOptions)
         .then((res) => {
           twitchArray = twitchArray.concat(res.data.data || []);
-          resolve(twitchArray);
         })
         .catch((err) => {
           this.handleApiError(err);
           reject(err);
-        });
-    });
+        }); 
+    }
+
+    return twitchArray;
   }
 
-  static fetchGames(gameIdArray) {
-    return new Promise((resolve, reject) => {
-      let twitchArray = [ ];
+  static async fetchGames (gameIdArray) {
+    let twitchArray = [ ];
 
-      // Twitch limits the streams endpoint to 100 at a time.
-      if(gameIdArray.length > 100) {
-        // Recursively call self with <= 100 usernames
-        twitchArray = twitchArray.concat(TwitchApi.fetchStreams(gameIdArray.slice(100)));
-      }
-
+    while (gameIdArray.length > 0) {
       let gameIds = gameIdArray.slice(0, 100);
+      gameIdArray = gameIdArray.slice(100);
       
       axios.get(`/games?id=${gameIds.join('&id=')}`, this.requestOptions)
         .then((res) => {
           twitchArray = twitchArray.concat(res.data.data || []);
-          resolve(twitchArray);
         })
         .catch((err) => {
           this.handleApiError(err);
           reject(err);
-        });
-    });
+        }); 
+    }
+
+    return twitchArray;
   }
 }
 
