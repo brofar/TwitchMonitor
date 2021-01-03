@@ -70,7 +70,7 @@ class TwitchMonitor {
         this.loadChannels();
 
         const now = moment();
-        console.log('[Twitch]', ' ▪ ▪ ▪ ▪ ▪ ', `Refreshing now (${reason ? reason : "No reason"})`, ' ▪ ▪ ▪ ▪ ▪ ');
+        console.log('[TwitchMonitor]', ' ▪ ▪ ▪ ▪ ▪ ', `Refreshing now (${reason ? reason : "No reason"})`, ' ▪ ▪ ▪ ▪ ▪ ');
 
         // Refresh all users periodically
         if ((this._lastUserRefresh === null || now.diff(moment(this._lastUserRefresh), 'minutes') >= 10) && this.channelNames.length > 0) {

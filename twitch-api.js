@@ -83,6 +83,8 @@ class TwitchApi {
    */
   static getTwitchData (baseUrl, paramName, paramValues, twitchData, resolve, reject) {
 
+    console.log(`[TwitchApi]`, `Calling Twitch${baseUrl}`);
+
     // Grab first 100 entries
     let firstHundredValues = paramValues.slice(0, 100);
 

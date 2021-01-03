@@ -279,9 +279,13 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
               // Unable to retrieve message object for editing
               if (e.message === "Unknown Message") {
                 // Specific error: the message does not exist, most likely deleted.
+                console.log('[Discord]', `The message for ${liveMsgDiscrim} does not exist, most likely deleted.`);
+
                 delete messageHistory[liveMsgDiscrim];
                 liveMessageDb.put('history', messageHistory);
                 // This will cause the message to be posted as new in the next update if needed.
+              } else {
+                console.log('[Discord]', `Error: ${e.message}.`);
               }
             });
         } else { // New message needed
