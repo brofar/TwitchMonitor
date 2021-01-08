@@ -59,6 +59,14 @@ client.on('ready', () => {
   CleanDiscordHistory();
 });
 
+
+// When client gets an error, it logs out
+// Need to log back in so we can continue
+client.on('error', () => {
+  console.log('[Discord]', 'Error encountered. Logging back in.');
+  client.login(process.env.DISCORD_BOT_TOKEN);
+});
+
 // Added to a new server
 client.on("guildCreate", guild => {
   console.log(`[Discord]`,`[${guild.name}]`, `Joined new server: ${guild.name}`);
@@ -185,6 +193,8 @@ function CleanDiscordHistory () {
     let dChannel = DiscordChannelSync.getChannel(client, guild, channel, false);
     let messageId = messageHistory[liveMsgDiscrim];
 
+    if(!dChannel) continue;
+
     dChannel.messages.fetch(messageId)
     .then((existingMsg) => {
       // Delete the message from discord
@@ -260,9 +270,11 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
           // Fetch existing message
           discordChannel.messages.fetch(existingMsgId)
             .then((existingMsg) => {
+              // https://discordjs.guide/popular-topics/errors.html#path
               existingMsg.edit(msgFormatted, {
                 embed: msgEmbed
-              }).then((message) => {
+              })
+              .then((message) => {
                 // Clean up entry if no longer live
                 if (!isLive) {
                   console.log('[Twitch]', `${streamData.user_name} went offline.`);
@@ -273,6 +285,9 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
                   delete messageHistory[liveMsgDiscrim];
                   liveMessageDb.put('history', messageHistory);
                 }
+              })
+              .catch((e) => {
+                console.log('[Discord]', `Edit Error: ${e.message}.`);
               });
             })
             .catch((e) => {

@@ -49,6 +49,7 @@ class DiscordChannelSync {
     let targetChannel;
 
     let guild = client.guilds.cache.get(guildId);
+    if(!guild) return;
     targetChannel = guild.channels.cache.get(channelId);
 
     if (!targetChannel) {
