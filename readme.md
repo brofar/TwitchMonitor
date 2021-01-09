@@ -23,6 +23,7 @@ Much of the code (and like 100% of the installation instructions below) was used
   * ~~Handle orphanated posts~~
   * ~~Remove streamer from global watch list when no servers are following them.~~
 * Enhancements
+  * Webserver backend?
   * discord-guild.js: Handle null template (throw exception?)
   * Update installation instructions on how to use Google Cloud free tier (https://www.writebots.com/discord-bot-hosting/)
   * DM Bot Master on errors:
