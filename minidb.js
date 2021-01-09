@@ -5,7 +5,7 @@ class MiniDb {
   constructor(name) {
     this.basePath = `${__dirname}/data/${name}`;
 
-    if (!fs.existsSync(this.basePath)){
+    if (!fs.existsSync(this.basePath)) {
       logger.log('[MiniDb]', 'Create base directory:', this.basePath);
       fs.mkdirSync(this.basePath);
     }

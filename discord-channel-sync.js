@@ -21,7 +21,7 @@ class DiscordChannelSync {
 
       let targetChannel = this.getChannel(client, guildId, guild.channel, verbose);
 
-      if(targetChannel) {
+      if (targetChannel) {
         // Add watched userstargetChannel
         targetChannel['watch-list'] = guild['watch-list'].usernames;
 
@@ -50,14 +50,14 @@ class DiscordChannelSync {
     let targetChannel;
 
     let guild = client.guilds.cache.get(guildId);
-    if(!guild) return;
+    if (!guild) return;
     targetChannel = guild.channels.cache.get(channelId);
 
     if (!targetChannel) {
-        if (verbose) {
-          logger.warn('[Discord]', 'Configuration problem ⚠ ', `Guild ${guild.name} does not have a <#${channelId}> channel!`);
-        }
-      } else {
+      if (verbose) {
+        logger.warn('[Discord]', 'Configuration problem ⚠ ', `Guild ${guild.name} does not have a <#${channelId}> channel!`);
+      }
+    } else {
       let permissions = targetChannel.permissionsFor(guild.me);
 
       if (verbose) {

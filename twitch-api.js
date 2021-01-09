@@ -24,7 +24,7 @@ class TwitchApi {
   }
 
   static handleApiError(err) {
-    const res = err.response || { };
+    const res = err.response || {};
 
     if (res.data && res.data.message) {
       logger.error('[TwitchApi]', 'API request failed with Helix error:', res.data.message, `(${res.data.error}/${res.data.status})`);
@@ -47,21 +47,21 @@ class TwitchApi {
   static fetchStreams(channelNames) {
     return new Promise((resolve, reject) => {
       let baseUrl = `/streams`;
-      this.getTwitchData (baseUrl, "user_login", channelNames, [ ], resolve, reject);
+      this.getTwitchData(baseUrl, "user_login", channelNames, [], resolve, reject);
     });
   }
 
   static fetchUsers(channelNames) {
     return new Promise((resolve, reject) => {
       let baseUrl = `/users`;
-      this.getTwitchData (baseUrl, "login", channelNames, [ ], resolve, reject);
+      this.getTwitchData(baseUrl, "login", channelNames, [], resolve, reject);
     });
   }
 
   static fetchGames(gameIds) {
     return new Promise((resolve, reject) => {
       let baseUrl = `/games`;
-      this.getTwitchData (baseUrl, "id", gameIds, [ ], resolve, reject);
+      this.getTwitchData(baseUrl, "id", gameIds, [], resolve, reject);
     });
   }
 
@@ -82,7 +82,7 @@ class TwitchApi {
    *
    * @return {string[]}  Array of stream information.
    */
-  static getTwitchData (baseUrl, paramName, paramValues, twitchData, resolve, reject) {
+  static getTwitchData(baseUrl, paramName, paramValues, twitchData, resolve, reject) {
 
     logger.log(`[TwitchApi]`, `Calling Twitch${baseUrl}`);
 
@@ -97,7 +97,7 @@ class TwitchApi {
 
     axios.get(url, this.requestOptions)
       .then(res => {
-        const retrivedInfo = twitchData.concat(res.data.data || [ ]);
+        const retrivedInfo = twitchData.concat(res.data.data || []);
 
         // If we still have remaining values to query, recurse.
         if (remainingValues.length > 0) {

@@ -51,7 +51,7 @@ class DiscordGuild {
 
   updateGuildConfig(guildConfig, templateConfig) {
 
-    Object.keys(templateConfig).every(function(prop) {
+    Object.keys(templateConfig).every(function (prop) {
       if (!guildConfig.hasOwnProperty(prop)) {
         guildConfig[prop] = templateConfig[prop];
       }
@@ -62,11 +62,11 @@ class DiscordGuild {
   }
 
   // Remove a guild config
-  remove () {
+  remove() {
     let guildConfig = this._guildDb;
-    if(guildConfig.hasOwnProperty(this.guild.id)) {
+    if (guildConfig.hasOwnProperty(this.guild.id)) {
       delete guildConfig[this.guild.id];
-      
+
       // Update the file
       this._config.put("guilds", guildConfig);
     }

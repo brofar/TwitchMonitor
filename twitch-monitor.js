@@ -12,57 +12,57 @@ class TwitchMonitor {
 
         this._lastUserRefresh = this._userDb.get("last-update") || null;
         this._pendingUserRefresh = false;
-        this._userData = this._userDb.get("user-list") || { };
+        this._userData = this._userDb.get("user-list") || {};
 
         this._pendingGameRefresh = false;
-        this._gameData = this._gameDb.get("game-list") || { };
+        this._gameData = this._gameDb.get("game-list") || {};
         this._watchingGameIds = [];
     }
 
     static start() {
-      // Refresh channel list
-      this.loadChannels();
+        // Refresh channel list
+        this.loadChannels();
 
-      // Configure polling interval
-      let checkIntervalMs = parseInt(process.env.TWITCH_CHECK_INTERVAL_MS);
-      if (isNaN(checkIntervalMs) || checkIntervalMs < TwitchMonitor.MIN_POLL_INTERVAL_MS) {
-          // Enforce minimum poll interval to help avoid rate limits
-          checkIntervalMs = TwitchMonitor.MIN_POLL_INTERVAL_MS;
-      }
-      setInterval(() => {
-          this.refresh("Periodic refresh");
-      }, checkIntervalMs + 1000);
+        // Configure polling interval
+        let checkIntervalMs = parseInt(process.env.TWITCH_CHECK_INTERVAL_MS);
+        if (isNaN(checkIntervalMs) || checkIntervalMs < TwitchMonitor.MIN_POLL_INTERVAL_MS) {
+            // Enforce minimum poll interval to help avoid rate limits
+            checkIntervalMs = TwitchMonitor.MIN_POLL_INTERVAL_MS;
+        }
+        setInterval(() => {
+            this.refresh("Periodic refresh");
+        }, checkIntervalMs + 1000);
 
-      // Immediate refresh after startup
-      setTimeout(() => {
-          this.refresh("Initial refresh after start-up");
-      }, 1000);
+        // Immediate refresh after startup
+        setTimeout(() => {
+            this.refresh("Initial refresh after start-up");
+        }, 1000);
 
-      // Ready!
-      logger.log('[TwitchMonitor]', `${checkIntervalMs}ms refresh interval`);
+        // Ready!
+        logger.log('[TwitchMonitor]', `${checkIntervalMs}ms refresh interval`);
     }
 
     static loadChannels() {
-      // Reload the file
-      let guildData = this._guildDb.get("guilds") || { };
+        // Reload the file
+        let guildData = this._guildDb.get("guilds") || {};
 
-      // Output Array
-      let channels = [ ];
+        // Output Array
+        let channels = [];
 
-      // Loop through the guilds and build our array of watched streamers (deduplicated)
-      for (const guild in guildData) {
-        channels = [...new Set([...channels,...guildData[guild]['watch-list']['usernames']])]
-      }
+        // Loop through the guilds and build our array of watched streamers (deduplicated)
+        for (const guild in guildData) {
+            channels = [...new Set([...channels, ...guildData[guild]['watch-list']['usernames']])]
+        }
 
-      // Load channel names from db
-      this.channelNames = channels;
+        // Load channel names from db
+        this.channelNames = channels;
 
-      logger.log('[TwitchMonitor]', `Polling ${this.channelNames.length} channels`);
+        logger.log('[TwitchMonitor]', `Polling ${this.channelNames.length} channels`);
 
-      if (!this.channelNames.length) {
-        logger.warn('[TwitchMonitor]', 'No channels configured');
-        return;
-      }
+        if (!this.channelNames.length) {
+            logger.warn('[TwitchMonitor]', 'No channels configured');
+            return;
+        }
     }
 
     static refresh(reason) {
@@ -75,48 +75,48 @@ class TwitchMonitor {
         // Refresh all users periodically
         if ((this._lastUserRefresh === null || now.diff(moment(this._lastUserRefresh), 'minutes') >= 10) && this.channelNames.length > 0) {
             TwitchApi.fetchUsers(this.channelNames)
-              .then((users) => {
-                  this.handleUserList(users);
-              })
-              .catch((err) => {
-                logger.warn('[TwitchMonitor]', 'Error in users refresh:', err);
-              })
-              .then(() => {
-                  if (this._pendingUserRefresh) {
-                      this._pendingUserRefresh = false;
-                  }
-              })
+                .then((users) => {
+                    this.handleUserList(users);
+                })
+                .catch((err) => {
+                    logger.warn('[TwitchMonitor]', 'Error in users refresh:', err);
+                })
+                .then(() => {
+                    if (this._pendingUserRefresh) {
+                        this._pendingUserRefresh = false;
+                    }
+                })
         }
 
         // Refresh all games if needed
         if (this._pendingGameRefresh) {
 
-          // Don't send an empty request
-          if(this._watchingGameIds.length > 0) {
-            TwitchApi.fetchGames(this._watchingGameIds)
-              .then((games) => {
-                  this.handleGameList(games);
-              })
-              .catch((err) => {
-                logger.warn('[TwitchMonitor]', 'Error in games refresh:', err);
-              })
-              .then(() => {
-                  if (this._pendingGameRefresh) {
-                      this._pendingGameRefresh = false;
-                  }
-              });
-          }
+            // Don't send an empty request
+            if (this._watchingGameIds.length > 0) {
+                TwitchApi.fetchGames(this._watchingGameIds)
+                    .then((games) => {
+                        this.handleGameList(games);
+                    })
+                    .catch((err) => {
+                        logger.warn('[TwitchMonitor]', 'Error in games refresh:', err);
+                    })
+                    .then(() => {
+                        if (this._pendingGameRefresh) {
+                            this._pendingGameRefresh = false;
+                        }
+                    });
+            }
         }
 
         // Refresh all streams
         if (!this._pendingUserRefresh && !this._pendingGameRefresh && this.channelNames.length > 0) {
             TwitchApi.fetchStreams(this.channelNames)
-              .then((channels) => {
-                  this.handleStreamList(channels);
-              })
-              .catch((err) => {
-                logger.warn('[TwitchMonitor]', 'Error in streams refresh:', err);
-              });
+                .then((channels) => {
+                    this.handleStreamList(channels);
+                })
+                .catch((err) => {
+                    logger.warn('[TwitchMonitor]', 'Error in streams refresh:', err);
+                });
         }
     }
 
@@ -124,13 +124,13 @@ class TwitchMonitor {
         let gotChannelNames = [];
 
         users.forEach((user) => {
-          
-          const channelName = user.login.toLowerCase();
 
-          let prevUserData = this._userData[channelName] || { };
-          this._userData[channelName] = Object.assign({ }, prevUserData, user);
+            const channelName = user.login.toLowerCase();
 
-          gotChannelNames.push(user.display_name);
+            let prevUserData = this._userData[channelName] || {};
+            this._userData[channelName] = Object.assign({}, prevUserData, user);
+
+            gotChannelNames.push(user.display_name);
         });
 
         if (gotChannelNames.length) {
@@ -149,8 +149,8 @@ class TwitchMonitor {
         games.forEach((game) => {
             const gameId = game.id;
 
-            let prevGameData = this._gameData[gameId] || { };
-            this._gameData[gameId] = Object.assign({ }, prevGameData, game);
+            let prevGameData = this._gameData[gameId] || {};
+            this._gameData[gameId] = Object.assign({}, prevGameData, game);
 
             gotGameNames.push(`${game.id} → ${game.name}`);
         });
@@ -177,11 +177,11 @@ class TwitchMonitor {
                 nextOnlineList.push(channelName);
             }
 
-            let userDataBase = this._userData[channelName] || { };
-            let prevStreamData = this.streamData[channelName] || { };
+            let userDataBase = this._userData[channelName] || {};
+            let prevStreamData = this.streamData[channelName] || {};
 
             // Write the most up to date data to the object
-            this.streamData[channelName] = Object.assign({ }, userDataBase, prevStreamData, stream);
+            this.streamData[channelName] = Object.assign({}, userDataBase, prevStreamData, stream);
             this.streamData[channelName].game = (stream.game_id && this._gameData[stream.game_id]) || null;
 
             if (stream.game_id) {
@@ -294,7 +294,7 @@ Array.prototype.hasEqualValues = function (b) {
 }
 
 TwitchMonitor.activeStreams = [];
-TwitchMonitor.streamData = { };
+TwitchMonitor.streamData = {};
 
 TwitchMonitor.channelLiveCallbacks = [];
 TwitchMonitor.channelOfflineCallbacks = [];

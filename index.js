@@ -71,11 +71,11 @@ client.on('error', () => {
 
 // Added to a new server
 client.on("guildCreate", guild => {
-  logger.log(`[Discord]`,`[${guild.name}]`, `Joined new server: ${guild.name}`);
+  logger.log(`[Discord]`, `[${guild.name}]`, `Joined new server: ${guild.name}`);
 
   // Create guild object.
   let _ = new DiscordGuild(guild);
-  logger.log(`[Discord]`,`[${guild.name}]`, `Created configuration for ${guild.name}`);
+  logger.log(`[Discord]`, `[${guild.name}]`, `Created configuration for ${guild.name}`);
 
   syncServerList(false);
 });
@@ -86,7 +86,7 @@ client.on("guildDelete", guild => {
 
   let dGuild = new DiscordGuild(guild);
   dGuild.remove();
-  logger.log(`[Discord]`,`[${guild.name}]`, `Deleted configuration for ${guild.name}`);
+  logger.log(`[Discord]`, `[${guild.name}]`, `Deleted configuration for ${guild.name}`);
 
   syncServerList(false);
 });
@@ -187,7 +187,7 @@ class StreamActivity {
 let liveMessageDb = new MiniDb('live-messages');
 let messageHistory = liveMessageDb.get("history") || {};
 
-function CleanDiscordHistory () {
+function CleanDiscordHistory() {
   logger.log('[CleanDiscordHistory]', `Cleaning all posts.`);
 
   for (const liveMsgDiscrim in messageHistory) {
@@ -195,31 +195,31 @@ function CleanDiscordHistory () {
     let dChannel = DiscordChannelSync.getChannel(client, guild, channel, false);
     let messageId = messageHistory[liveMsgDiscrim];
 
-    if(!dChannel) continue;
+    if (!dChannel) continue;
 
     dChannel.messages.fetch(messageId)
-    .then((existingMsg) => {
-      // Delete the message from discord
-      existingMsg.delete();
+      .then((existingMsg) => {
+        // Delete the message from discord
+        existingMsg.delete();
 
-      // Clean up DB
-      delete messageHistory[liveMsgDiscrim];
-      liveMessageDb.put('history', messageHistory);
-    })
-    .catch((e) => {
-      // Unable to retrieve message object
-      if (e.message === "Unknown Message") {
-        // Specific error: the message does not exist, most likely deleted.
+        // Clean up DB
         delete messageHistory[liveMsgDiscrim];
         liveMessageDb.put('history', messageHistory);
-      }
-    });
+      })
+      .catch((e) => {
+        // Unable to retrieve message object
+        if (e.message === "Unknown Message") {
+          // Specific error: the message does not exist, most likely deleted.
+          delete messageHistory[liveMsgDiscrim];
+          liveMessageDb.put('history', messageHistory);
+        }
+      });
   }
   logger.log('[CleanDiscordHistory]', `Cleaned all posts.`);
 }
 
 TwitchMonitor.onChannelLiveUpdate((streamData) => {
-  const isLive = streamData.type === "live";
+  const isLive = (streamData.type === "live");
 
   // Refresh channel list
   try {
@@ -250,13 +250,13 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
 
         // If liveMsgDiscrim exists but streamData.user_name is NOT in channel's list:
         // delete the message, because the streamer was removed by someone.
-        if(existingMsgId && !watchedStreamer) { // Streamer recently removed from list
+        if (existingMsgId && !watchedStreamer) { // Streamer recently removed from list
           // Fetch existing message
           discordChannel.messages.fetch(existingMsgId)
             .then((existingMsg) => {
               // Delete the message from discord
               existingMsg.delete();
-              
+
               // Clean up DB
               delete messageHistory[liveMsgDiscrim];
               liveMessageDb.put('history', messageHistory);
@@ -264,45 +264,46 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
               logger.log('[Twitch]', `${streamData.user_name} was removed from ${discordChannel.guild.name} #${discordChannel.name}.`);
             })
             .catch((e) => {
-              logger.log('[Twitch]', `Could not remove ${streamData.user_name} from ${discordChannel.guild.name} #${discordChannel.name}.`);
+              logger.warn('[Twitch]', `Could not remove ${streamData.user_name} from ${discordChannel.guild.name} #${discordChannel.name}.`);
             });
-        } else if (!watchedStreamer) { // Not a streamer this guild cares about.
+        } else if (!watchedStreamer) {
+          // Not a streamer this guild cares about.
           continue;
-        } else if (existingMsgId) { // Message already exists
+        } else if (existingMsgId) {
+          // Message already exists
           // Fetch existing message
           discordChannel.messages.fetch(existingMsgId)
             .then((existingMsg) => {
-              // https://discordjs.guide/popular-topics/errors.html#path
-              existingMsg.edit(msgFormatted, {
-                embed: msgEmbed
-              })
-              .then((message) => {
-                // Clean up entry if no longer live
-                if (!isLive) {
-                  logger.log('[Twitch]', `${streamData.user_name} went offline.`);
-                  // Delete the message from discord
-                  existingMsg.delete();
+              // Clean up entry if no longer live
+              if (!isLive) {
+                logger.log('[Twitch]', `${streamData.user_name} went offline.`);
 
-                  // Clean up DB
-                  delete messageHistory[liveMsgDiscrim];
-                  liveMessageDb.put('history', messageHistory);
-                }
-              })
-              .catch((e) => {
-                logger.log('[Discord]', `Edit Error: ${e.message}.`);
-              });
+                // Delete the message from discord
+                existingMsg.delete().catch((e) => {
+                  logger.warn('[Discord]', `Delete Error: ${e.message}.`);
+                });
+
+                // Clean up DB
+                delete messageHistory[liveMsgDiscrim];
+                liveMessageDb.put('history', messageHistory);
+              } else {
+                // https://discordjs.guide/popular-topics/errors.html#path
+                existingMsg.edit(msgFormatted, { embed: msgEmbed }).catch((e) => {
+                  logger.warn('[Discord]', `Edit Error: ${e.message}.`);
+                });
+              }
             })
             .catch((e) => {
               // Unable to retrieve message object for editing
               if (e.message === "Unknown Message") {
                 // Specific error: the message does not exist, most likely deleted.
-                logger.log('[Discord]', `The message for ${liveMsgDiscrim} does not exist, most likely deleted.`);
+                logger.warn('[Discord]', `The message for ${liveMsgDiscrim} does not exist, most likely deleted.`);
 
                 delete messageHistory[liveMsgDiscrim];
                 liveMessageDb.put('history', messageHistory);
                 // This will cause the message to be posted as new in the next update if needed.
               } else {
-                logger.log('[Discord]', `Error: ${e.message}.`);
+                logger.warn('[Discord]', `Error: ${e.message}.`);
               }
             });
         } else { // New message needed
@@ -350,12 +351,12 @@ TwitchMonitor.onChannelOffline((streamData) => {
 });
 
 // --- Common functions -------------------------------------------
-String.prototype.replaceAll = function(search, replacement) {
+String.prototype.replaceAll = function (search, replacement) {
   var target = this;
   return target.split(search).join(replacement);
 };
 
-String.prototype.spacifyCamels = function() {
+String.prototype.spacifyCamels = function () {
   let target = this;
 
   try {
@@ -365,7 +366,7 @@ String.prototype.spacifyCamels = function() {
   }
 };
 
-Array.prototype.joinEnglishList = function() {
+Array.prototype.joinEnglishList = function () {
   let a = this;
 
   try {
@@ -375,12 +376,12 @@ Array.prototype.joinEnglishList = function() {
   }
 };
 
-String.prototype.lowercaseFirstChar = function() {
+String.prototype.lowercaseFirstChar = function () {
   let string = this;
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
-Array.prototype.hasEqualValues = function(b) {
+Array.prototype.hasEqualValues = function (b) {
   let a = this;
 
   if (a.length !== b.length) {
