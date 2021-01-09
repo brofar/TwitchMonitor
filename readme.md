@@ -110,7 +110,9 @@ Once the application has been configured, start it using `node` from the install
 
 Send the following link to the admin of a Discord server to let them invite the Bot:
 
-  ```https://discord.com/api/oauth2/authorize?client_id=BOT_CLIENT_ID&permissions=92160&scope=bot```
+  ```
+  https://discord.com/api/oauth2/authorize?client_id=BOT_CLIENT_ID&permissions=92160&scope=bot
+  ```
   
 Swap `BOT_CLIENT_ID` in the URL above for your Discord app's client id, which you can find in the app details.
 
