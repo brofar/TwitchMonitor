@@ -2,6 +2,7 @@ const Dotenv = require('dotenv').config();
 const TwitchApi = require('./twitch-api');
 const MiniDb = require('./minidb');
 const moment = require('moment');
+const logger = require('./logger');
 
 class TwitchMonitor {
     static __init() {
@@ -38,7 +39,7 @@ class TwitchMonitor {
       }, 1000);
 
       // Ready!
-      console.log('[TwitchMonitor]', `${checkIntervalMs}ms refresh interval`);
+      logger.log('[TwitchMonitor]', `${checkIntervalMs}ms refresh interval`);
     }
 
     static loadChannels() {
@@ -56,12 +57,11 @@ class TwitchMonitor {
       // Load channel names from db
       this.channelNames = channels;
 
-      //console.log('[TwitchMonitor]', `Polling channels:`, this.channelNames.join(', '));
-      console.log('[TwitchMonitor]', `Polling ${this.channelNames.length} channels`);
+      logger.log('[TwitchMonitor]', `Polling ${this.channelNames.length} channels`);
 
       if (!this.channelNames.length) {
-          console.warn('[TwitchMonitor]', 'No channels configured');
-          return;
+        logger.warn('[TwitchMonitor]', 'No channels configured');
+        return;
       }
     }
 
@@ -70,7 +70,7 @@ class TwitchMonitor {
         this.loadChannels();
 
         const now = moment();
-        console.log('[TwitchMonitor]', ' ▪ ▪ ▪ ▪ ▪ ', `Refreshing now (${reason ? reason : "No reason"})`, ' ▪ ▪ ▪ ▪ ▪ ');
+        logger.log('[TwitchMonitor]', ' ▪ ▪ ▪ ▪ ▪ ', `Refreshing now (${reason ? reason : "No reason"})`, ' ▪ ▪ ▪ ▪ ▪ ');
 
         // Refresh all users periodically
         if ((this._lastUserRefresh === null || now.diff(moment(this._lastUserRefresh), 'minutes') >= 10) && this.channelNames.length > 0) {
@@ -79,7 +79,7 @@ class TwitchMonitor {
                   this.handleUserList(users);
               })
               .catch((err) => {
-                  console.warn('[TwitchMonitor]', 'Error in users refresh:', err);
+                logger.warn('[TwitchMonitor]', 'Error in users refresh:', err);
               })
               .then(() => {
                   if (this._pendingUserRefresh) {
@@ -98,7 +98,7 @@ class TwitchMonitor {
                   this.handleGameList(games);
               })
               .catch((err) => {
-                  console.warn('[TwitchMonitor]', 'Error in games refresh:', err);
+                logger.warn('[TwitchMonitor]', 'Error in games refresh:', err);
               })
               .then(() => {
                   if (this._pendingGameRefresh) {
@@ -115,7 +115,7 @@ class TwitchMonitor {
                   this.handleStreamList(channels);
               })
               .catch((err) => {
-                  console.warn('[TwitchMonitor]', 'Error in streams refresh:', err);
+                logger.warn('[TwitchMonitor]', 'Error in streams refresh:', err);
               });
         }
     }
@@ -134,7 +134,7 @@ class TwitchMonitor {
         });
 
         if (gotChannelNames.length) {
-            console.debug('[TwitchMonitor]', 'Updated user info:', gotChannelNames.join(', '));
+            logger.log('[TwitchMonitor]', 'Updated user info:', gotChannelNames.join(', '));
         }
 
         this._lastUserRefresh = moment();
@@ -156,7 +156,7 @@ class TwitchMonitor {
         });
 
         if (gotGameNames.length) {
-            console.debug('[TwitchMonitor]', 'Updated game info:', gotGameNames.join(', '));
+            logger.log('[TwitchMonitor]', 'Updated game info:', gotGameNames.join(', '));
         }
 
         this._lastGameRefresh = moment();
@@ -198,7 +198,7 @@ class TwitchMonitor {
 
             if (this.activeStreams.indexOf(_chanName) === -1) {
                 // Stream was not in the list before
-                console.log('[TwitchMonitor]', 'Stream channel has gone online:', _chanName);
+                logger.log('[TwitchMonitor]', 'Stream channel has gone online:', _chanName);
                 anyChanges = true;
             }
 
@@ -213,7 +213,7 @@ class TwitchMonitor {
 
             if (nextOnlineList.indexOf(_chanName) === -1) {
                 // Stream was in the list before, but no longer
-                console.log('[TwitchMonitor]', 'Stream channel has gone offline:', _chanName);
+                logger.log('[TwitchMonitor]', 'Stream channel has gone offline:', _chanName);
                 this.streamData[_chanName].type = "detected_offline";
                 this.handleChannelOffline(this.streamData[_chanName]);
                 anyChanges = true;
@@ -224,7 +224,7 @@ class TwitchMonitor {
             // Notify OK, update list
             this.activeStreams = nextOnlineList;
         } else {
-            console.log('[TwitchMonitor]', 'Could not notify channel, will try again next update.');
+            logger.log('[TwitchMonitor]', 'Could not notify channel, will try again next update.');
         }
 
         if (!this._watchingGameIds.hasEqualValues(nextGameIdList)) {

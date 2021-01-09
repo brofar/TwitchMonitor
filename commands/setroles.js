@@ -4,7 +4,7 @@
 const MiniDb = require('../minidb');
 const Discord = require('discord.js');
 const DiscordGuild = require('../discord-guild');
-const prefix = process.env.DISCORD_PREFIX;
+const logger = require('../logger');
 
 /* 
 * Sets the announcement channel for a guild
@@ -30,6 +30,7 @@ class SetRoles {
 
     if(!message.guild.me.hasPermission("MANAGE_ROLES")) {
       // "I don't have Manage Roles permissions on your server!"
+      logger.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Bot doesn't have MANAGE_ROLES permission.`);
     }
 
     // Get the mentioned role(s)
@@ -54,10 +55,10 @@ class SetRoles {
 
     message.channel.send(msgToSend, msgOptions)
         .then((message) => {
-            console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${returnMessage}`)
+            logger.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${returnMessage}`)
         })
         .catch((err) => {
-            console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+            logger.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
         });
 	}
 }

@@ -1,11 +1,12 @@
 const fs = require('fs');
+const logger = require('./logger');
 
 class MiniDb {
   constructor(name) {
     this.basePath = `${__dirname}/data/${name}`;
 
     if (!fs.existsSync(this.basePath)){
-      console.log('[MiniDb]', 'Create base directory:', this.basePath);
+      logger.log('[MiniDb]', 'Create base directory:', this.basePath);
       fs.mkdirSync(this.basePath);
     }
   }
@@ -22,7 +23,7 @@ class MiniDb {
         return JSON.parse(raw) || null;
       }
     } catch (e) {
-      console.error('[MiniDb]', 'Read error:', filePath, e);
+      logger.error('[MiniDb]', 'Read error:', filePath, e);
     }
     return null;
   }
@@ -39,7 +40,7 @@ class MiniDb {
       });
       return true;
     } catch (e) {
-      console.error('[MiniDb]', 'Write error:', filePath, e);
+      logger.error('[MiniDb]', 'Write error:', filePath, e);
       return false;
     }
   }

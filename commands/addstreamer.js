@@ -1,6 +1,7 @@
 const MiniDb = require('../minidb');
 const Discord = require('discord.js');
 const DiscordGuild = require('../discord-guild');
+const logger = require('../logger');
 
 /* 
 * Adds a streamer to a server's watch list
@@ -47,7 +48,7 @@ class AddStreamer {
       if(guildWatchedUsers.indexOf(userToAdd) === -1) {
 
         guildWatchedUsers.push(userToAdd);
-        console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Added ${userToAdd} to guild watch list.`);
+        logger.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Added ${userToAdd} to guild watch list.`);
 
         result.added.push(userToAdd);
       } else {
@@ -77,10 +78,10 @@ class AddStreamer {
 
     message.channel.send(msgToSend, msgOptions)
         .then((message) => {
-            console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${result.added.length} added. ${result.skipped.length} duplicates.`)
+            logger.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${result.added.length} added. ${result.skipped.length} duplicates.`)
         })
         .catch((err) => {
-            console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+            logger.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
         });
 	}
 }

@@ -67,12 +67,10 @@ Configuration options explained:
 
 |Key|Required?|Description|
 |---|---------|-----------|
-|`DISCORD_ANNOUNCE_CHANNEL`|☑|Channel name to post stream announcements in. Make sure the bot has permissions to post here.|
 |`DISCORD_BOT_TOKEN`|☑|Your bot token, via Discord developer portal (explained below).|
 |`TWITCH_CLIENT_ID`|☑|Client ID for your Twitch app, via developer portal (explained below).|
 |`TWITCH_OAUTH_TOKEN`|☑|OAuth token that grants access to your Twitch app, via `id.twitch.tv` as explained below.|
 |`DISCORD_BOT_MASTER_USERID`| |[Discord ID](https://techswift.org/2020/04/22/how-to-find-your-user-id-on-discord) of the bot's owner (will be DM'd if there are errors).|
-|`DISCORD_PREFIX`|☑|Prefix for the bot's commands.|
 |`TWITCH_CHECK_INTERVAL_MS`| |How often to poll the Twitch API and send or update live embeds.|
 |`TWITCH_USE_BOXART`| |If true, use alternate Live Embed style that includes game boxart as a thumbnail image if available.|
 
@@ -112,7 +110,7 @@ Once the application has been configured, start it using `node` from the install
 
 Send the following link to the admin of a Discord server to let them invite the Bot:
 
-  `https://discord.com/api/oauth2/authorize?client_id=BOT_CLIENT_ID&permissions=92160&scope=bot`
+  ```https://discord.com/api/oauth2/authorize?client_id=BOT_CLIENT_ID&permissions=92160&scope=bot```
   
 Swap `BOT_CLIENT_ID` in the URL above for your Discord app's client id, which you can find in the app details.
 

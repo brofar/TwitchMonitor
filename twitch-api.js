@@ -1,5 +1,6 @@
 const Dotenv = require('dotenv').config();
 const axios = require('axios');
+const logger = require('./logger');
 
 /**
  * Twitch Helix API helper ("New Twitch API").
@@ -26,9 +27,9 @@ class TwitchApi {
     const res = err.response || { };
 
     if (res.data && res.data.message) {
-      console.error('[TwitchApi]', 'API request failed with Helix error:', res.data.message, `(${res.data.error}/${res.data.status})`);
+      logger.error('[TwitchApi]', 'API request failed with Helix error:', res.data.message, `(${res.data.error}/${res.data.status})`);
     } else {
-      console.error('[TwitchApi]', 'API request failed with error:', err.message || err);
+      logger.error('[TwitchApi]', 'API request failed with error:', err.message || err);
     }
   }
 
@@ -83,7 +84,7 @@ class TwitchApi {
    */
   static getTwitchData (baseUrl, paramName, paramValues, twitchData, resolve, reject) {
 
-    console.log(`[TwitchApi]`, `Calling Twitch${baseUrl}`);
+    logger.log(`[TwitchApi]`, `Calling Twitch${baseUrl}`);
 
     // Grab first 100 entries
     let firstHundredValues = paramValues.slice(0, 100);

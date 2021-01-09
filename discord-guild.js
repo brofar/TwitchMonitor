@@ -2,6 +2,7 @@ const Dotenv = require('dotenv').config();
 const axios = require('axios');
 const MiniDb = require('./minidb');
 const Discord = require('discord.js');
+const logger = require('./logger');
 
 /**
  * Discord guild event functions
@@ -13,7 +14,7 @@ class DiscordGuild {
     this._guildDb = this._config.get("guilds") || {};
 
     this.guild = guild;
-    console.log(`[Guild]`, `[${guild.name}]`, `New Guild object for ${guild.name}`);
+    logger.log(`[Guild]`, `[${guild.name}]`, `New Guild object for ${guild.name}`);
     this.guildConfig = this.checkGuildConfig();
   }
 
@@ -27,24 +28,24 @@ class DiscordGuild {
 
     if (!guildConfig.hasOwnProperty(this.guild.id)) {
       // Guild config didn't exist. Need to create a new config from the template
-      console.log(`[Guild]`, `[${this.guild.name}]`, `Guild config does't exist. Create a new config from template.`);
+      logger.log(`[Guild]`, `[${this.guild.name}]`, `Guild config does't exist. Create a new config from template.`);
       guildConfig[this.guild.id] = templateConfig;
       this._config.put("guilds", guildConfig);
       return templateConfig;
 
     } else {
       // Config does exist
-      console.log(`[Guild]`, `[${this.guild.name}]`, `Guild config exists.`);
+      logger.log(`[Guild]`, `[${this.guild.name}]`, `Guild config exists.`);
       let thisGuildConfig = guildConfig[this.guild.id];
 
       // Check for any missing props and add them
-      console.log(`[Guild]`, `[${this.guild.name}]`, `Checking for updated template.`);
+      logger.log(`[Guild]`, `[${this.guild.name}]`, `Checking for updated template.`);
       guildConfig[this.guild.id] = this.updateGuildConfig(thisGuildConfig, templateConfig);
       this._config.put("guilds", guildConfig);
     }
 
     // Config exists and is up to date
-    console.log(`[Guild]`, `[${this.guild.name}]`, `Guild config exists and is up to date.`);
+    logger.log(`[Guild]`, `[${this.guild.name}]`, `Guild config exists and is up to date.`);
     return guildConfig[this.guild.id];
   }
 
@@ -87,7 +88,7 @@ class DiscordGuild {
 
       // Update the file
       this._config.put("guilds", guildConfig);
-      console.log(`[Guild]`, `[${this.guild.name}]`, `Updated ${property} to ${value}`);
+      logger.log(`[Guild]`, `[${this.guild.name}]`, `Updated ${property} to ${value}`);
     }
   }
 }

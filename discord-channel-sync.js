@@ -3,6 +3,7 @@
  */
 
 const MiniDb = require('./minidb');
+const logger = require('./logger');
 
 class DiscordChannelSync {
 
@@ -27,12 +28,12 @@ class DiscordChannelSync {
         // Add into master array
         allChannels.push(targetChannel);
 
-        console.log('[Discord]', `Added ${targetChannel.guild.name} #${targetChannel.name} to channel cache.`);
+        logger.log('[Discord]', `Added ${targetChannel.guild.name} #${targetChannel.name} to channel cache.`);
       }
     }
 
     if (verbose) {
-      console.log('[Discord]', `Discovered ${allChannels.length} announcement channel(s).`);
+      logger.log('[Discord]', `Discovered ${allChannels.length} announcement channel(s).`);
     }
 
     return allChannels;
@@ -54,18 +55,18 @@ class DiscordChannelSync {
 
     if (!targetChannel) {
         if (verbose) {
-          console.warn('[Discord]', 'Configuration problem ⚠ ', `Guild ${guild.name} does not have a <#${channelId}> channel!`);
+          logger.warn('[Discord]', 'Configuration problem ⚠ ', `Guild ${guild.name} does not have a <#${channelId}> channel!`);
         }
       } else {
       let permissions = targetChannel.permissionsFor(guild.me);
 
       if (verbose) {
-        console.log('[Discord]', ' --> ', `Member of server ${guild.name}, target channel is #${targetChannel.name}`);
+        logger.log('[Discord]', ' --> ', `Member of server ${guild.name}, target channel is #${targetChannel.name}`);
       }
 
       if (!permissions.has("SEND_MESSAGES")) {
         if (verbose) {
-          console.warn('[Discord]', 'Permission problem ⚠', `I do not have SEND_MESSAGES permission on channel #${targetChannel.name} on ${guild.name}: announcement sends will fail.`);
+          logger.warn('[Discord]', 'Permission problem ⚠', `I do not have SEND_MESSAGES permission on channel #${targetChannel.name} on ${guild.name}: announcement sends will fail.`);
         }
       }
     }

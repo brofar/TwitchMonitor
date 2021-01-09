@@ -12,14 +12,16 @@ const LiveEmbed = require('./live-embed');
 const MiniDb = require('./minidb');
 const TwitchMonitor = require('./twitch-monitor');
 const DiscordGuild = require('./discord-guild');
+const logger = require('./logger');
+
 
 // --- Startup -------------------------------------------
-console.log('Bot starting.');
+logger.log('Bot starting.');
 
 // --- Discord Commands ----------------------------------
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
-console.log(`[Discord]`, `Discovered ${commandFiles.length} command file(s).`);
+logger.log(`[Discord]`, `Discovered ${commandFiles.length} command file(s).`);
 
 // grab all the command files from the command directory
 for (const file of commandFiles) {
@@ -29,12 +31,12 @@ for (const file of commandFiles) {
   // with the key as the command name and the value as the exported module
   var cmdName = command.name.toString().trim().toLowerCase();
   client.commands.set(cmdName, command);
-  console.log(`[Discord]`, `Added ${cmdName} to active command list.`);
+  logger.log(`[Discord]`, `Added ${cmdName} to active command list.`);
 }
-console.log(`[Discord]`, `Finished loading commands.`);
+logger.log(`[Discord]`, `Finished loading commands.`);
 
 // --- Discord -------------------------------------------
-console.log(`[Discord]`, `Connecting to Discord...`);
+logger.log(`[Discord]`, `Connecting to Discord...`);
 
 let targetChannels = [];
 
@@ -44,7 +46,7 @@ let syncServerList = (logMembership) => {
 
 // Connected to Discord
 client.on('ready', () => {
-  console.log('[Discord]', `Bot is ready; logged in as ${client.user.tag}.`);
+  logger.log('[Discord]', `Bot is ready; logged in as ${client.user.tag}.`);
 
   // Init list of connected servers, and determine which channels we are announcing to
   syncServerList(true);
@@ -63,28 +65,28 @@ client.on('ready', () => {
 // When client gets an error, it logs out
 // Need to log back in so we can continue
 client.on('error', () => {
-  console.log('[Discord]', 'Error encountered. Logging back in.');
+  logger.log('[Discord]', 'Error encountered. Logging back in.');
   client.login(process.env.DISCORD_BOT_TOKEN);
 });
 
 // Added to a new server
 client.on("guildCreate", guild => {
-  console.log(`[Discord]`,`[${guild.name}]`, `Joined new server: ${guild.name}`);
+  logger.log(`[Discord]`,`[${guild.name}]`, `Joined new server: ${guild.name}`);
 
   // Create guild object.
   let _ = new DiscordGuild(guild);
-  console.log(`[Discord]`,`[${guild.name}]`, `Created configuration for ${guild.name}`);
+  logger.log(`[Discord]`,`[${guild.name}]`, `Created configuration for ${guild.name}`);
 
   syncServerList(false);
 });
 
 // Removed from a server
 client.on("guildDelete", guild => {
-  console.log(`[Discord]`, `Removed from a server: ${guild.name}`);
+  logger.log(`[Discord]`, `Removed from a server: ${guild.name}`);
 
   let dGuild = new DiscordGuild(guild);
   dGuild.remove();
-  console.log(`[Discord]`,`[${guild.name}]`, `Deleted configuration for ${guild.name}`);
+  logger.log(`[Discord]`,`[${guild.name}]`, `Deleted configuration for ${guild.name}`);
 
   syncServerList(false);
 });
@@ -116,7 +118,7 @@ client.on('message', message => {
     const args = message.content.slice(prefix.length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
 
-    console.log(`[Discord]`, `[${message.guild.name}]`, `${command} command received from @${message.member.displayName}. Command Exists: ${client.commands.has(command)}`);
+    logger.log(`[Discord]`, `[${message.guild.name}]`, `${command} command received from @${message.member.displayName}. Command Exists: ${client.commands.has(command)}`);
 
     if (!client.commands.has(command)) return;
 
@@ -124,13 +126,13 @@ client.on('message', message => {
     try {
       client.commands.get(command).execute(message, args, theGuild);
     } catch (e) {
-      console.warn('[Discord]', 'Command execution problem:', e);
+      logger.warn('[Discord]', 'Command execution problem:', e);
       message.reply('There was an error trying to execute that command!');
     }
   }
 });
 
-console.log('[Discord]', 'Logging in...');
+logger.log('[Discord]', 'Logging in...');
 client.login(process.env.DISCORD_BOT_TOKEN);
 
 // Activity updater
@@ -164,7 +166,7 @@ class StreamActivity {
       "type": "WATCHING"
     });
 
-    console.log('[StreamActivity]', `Update current activity: watching ${activity}.`);
+    logger.log('[StreamActivity]', `Update current activity: watching ${activity}.`);
   }
 
   static init(discordClient) {
@@ -186,7 +188,7 @@ let liveMessageDb = new MiniDb('live-messages');
 let messageHistory = liveMessageDb.get("history") || {};
 
 function CleanDiscordHistory () {
-  console.log('[CleanDiscordHistory]', `Cleaning all posts.`);
+  logger.log('[CleanDiscordHistory]', `Cleaning all posts.`);
 
   for (const liveMsgDiscrim in messageHistory) {
     let [guild, channel, twitch] = liveMsgDiscrim.split('_');
@@ -213,7 +215,7 @@ function CleanDiscordHistory () {
       }
     });
   }
-  console.log('[CleanDiscordHistory]', `Cleaned all posts.`);
+  logger.log('[CleanDiscordHistory]', `Cleaned all posts.`);
 }
 
 TwitchMonitor.onChannelLiveUpdate((streamData) => {
@@ -259,10 +261,10 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
               delete messageHistory[liveMsgDiscrim];
               liveMessageDb.put('history', messageHistory);
 
-              console.log('[Twitch]', `${streamData.user_name} was removed from ${discordChannel.guild.name} #${discordChannel.name}.`);
+              logger.log('[Twitch]', `${streamData.user_name} was removed from ${discordChannel.guild.name} #${discordChannel.name}.`);
             })
             .catch((e) => {
-              console.log('[Twitch]', `Could not remove ${streamData.user_name} from ${discordChannel.guild.name} #${discordChannel.name}.`);
+              logger.log('[Twitch]', `Could not remove ${streamData.user_name} from ${discordChannel.guild.name} #${discordChannel.name}.`);
             });
         } else if (!watchedStreamer) { // Not a streamer this guild cares about.
           continue;
@@ -277,7 +279,7 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
               .then((message) => {
                 // Clean up entry if no longer live
                 if (!isLive) {
-                  console.log('[Twitch]', `${streamData.user_name} went offline.`);
+                  logger.log('[Twitch]', `${streamData.user_name} went offline.`);
                   // Delete the message from discord
                   existingMsg.delete();
 
@@ -287,20 +289,20 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
                 }
               })
               .catch((e) => {
-                console.log('[Discord]', `Edit Error: ${e.message}.`);
+                logger.log('[Discord]', `Edit Error: ${e.message}.`);
               });
             })
             .catch((e) => {
               // Unable to retrieve message object for editing
               if (e.message === "Unknown Message") {
                 // Specific error: the message does not exist, most likely deleted.
-                console.log('[Discord]', `The message for ${liveMsgDiscrim} does not exist, most likely deleted.`);
+                logger.log('[Discord]', `The message for ${liveMsgDiscrim} does not exist, most likely deleted.`);
 
                 delete messageHistory[liveMsgDiscrim];
                 liveMessageDb.put('history', messageHistory);
                 // This will cause the message to be posted as new in the next update if needed.
               } else {
-                console.log('[Discord]', `Error: ${e.message}.`);
+                logger.log('[Discord]', `Error: ${e.message}.`);
               }
             });
         } else { // New message needed
@@ -318,22 +320,22 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
 
             discordChannel.send(msgToSend, msgOptions)
               .then((message) => {
-                console.log('[Discord]', `Sent announce msg to #${discordChannel.name} on ${discordChannel.guild.name}`)
+                logger.log('[Discord]', `Sent announce msg to #${discordChannel.name} on ${discordChannel.guild.name}`)
 
                 messageHistory[liveMsgDiscrim] = message.id;
                 liveMessageDb.put('history', messageHistory);
               })
               .catch((err) => {
-                console.log('[Discord]', `Could not send announce msg to #${discordChannel.name} on ${discordChannel.guild.name}:`, err.message);
+                logger.log('[Discord]', `Could not send announce msg to #${discordChannel.name} on ${discordChannel.guild.name}:`, err.message);
               });
           } else {
-            console.log('[Discord]', `[${discordChannel.guild.name}]`, `[${discordChannel.name}]`, `${msgFormatted}`);
+            logger.log('[Discord]', `[${discordChannel.guild.name}]`, `[${discordChannel.name}]`, `${msgFormatted}`);
           }
         }
 
         anySent = true;
       } catch (e) {
-        console.warn('[Discord]', 'Message send problem:', e);
+        logger.warn('[Discord]', 'Message send problem:', e);
       }
     }
   }

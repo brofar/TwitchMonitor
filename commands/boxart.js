@@ -2,6 +2,7 @@
 
 const Discord = require('discord.js');
 const DiscordGuild = require('../discord-guild');
+const logger = require('../logger');
 
 class BoxArt {
   static category() {
@@ -27,10 +28,10 @@ class BoxArt {
   
     message.channel.send(msgEmbed)
         .then((message) => {
-            console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Set box art to ${newBoxArt}.`)
+            logger.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Set box art to ${newBoxArt}.`)
         })
         .catch((err) => {
-            console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+            logger.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
         });
   
 	}

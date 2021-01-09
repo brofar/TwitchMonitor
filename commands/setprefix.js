@@ -2,6 +2,7 @@
 
 const Discord = require('discord.js');
 const DiscordGuild = require('../discord-guild');
+const logger = require('../logger');
 
 class SetPrefix {
   static category() {
@@ -28,10 +29,10 @@ class SetPrefix {
     
       message.channel.send(msgEmbed)
           .then((message) => {
-              console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Set bot prefix to ${newPrefix}.`)
+              logger.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Set bot prefix to ${newPrefix}.`)
           })
           .catch((err) => {
-              console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+              logger.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
           });
     }
 	}

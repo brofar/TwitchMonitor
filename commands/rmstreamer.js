@@ -1,9 +1,6 @@
-// Multi-guild support: Done.
-// TODO: Remove streamer's card if they're currently live when we remove them.
-
 const MiniDb = require('../minidb');
 const Discord = require('discord.js');
-const prefix = process.env.DISCORD_PREFIX;
+const logger = require('../logger');
 
 class RmStreamer {
 
@@ -70,10 +67,10 @@ class RmStreamer {
 
     message.channel.send(msgToSend, msgOptions)
       .then((message) => {
-        console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${deletedUsers.length} deleted. ${nonExistant.length} skipped.`)
+        logger.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${deletedUsers.length} deleted. ${nonExistant.length} skipped.`)
       })
       .catch((err) => {
-        console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+        logger.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
       });
   }
 }

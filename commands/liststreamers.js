@@ -2,7 +2,7 @@
 
 const MiniDb = require('../minidb');
 const Discord = require('discord.js');
-const prefix = process.env.DISCORD_PREFIX;
+const logger = require('../logger');
 
 class ListStreamers {
   
@@ -36,10 +36,10 @@ class ListStreamers {
 
     message.channel.send(msgToSend, msgOptions)
       .then((message) => {
-        console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${watchedUsers.length} users listed.`);
+        logger.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${watchedUsers.length} users listed.`);
       })
       .catch((err) => {
-        console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+        logger.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
       });
   }
 }

@@ -2,6 +2,7 @@
 
 const Discord = require('discord.js');
 const fs = require('fs');
+const logger = require('../logger');
 
 class Help {
 
@@ -35,7 +36,7 @@ class Help {
 
         let cmdCategory = typeof command.category === 'function' ? command.category() : "General"; 
 
-        console.log(`[${this.name.toString().trim()}]`, `Discovered ${cmdName} command in category ${cmdCategory}.`);
+        logger.log(`[${this.name.toString().trim()}]`, `Discovered ${cmdName} command in category ${cmdCategory}.`);
         
         // Clever way to check if the category exists
         // and create it if not.
@@ -44,7 +45,7 @@ class Help {
         }
       }
 
-      console.log(`[${this.name.toString().trim()}]`, `Discovered ${commandFiles.length} command file(s).`);
+      logger.log(`[${this.name.toString().trim()}]`, `Discovered ${commandFiles.length} command file(s).`);
 
       msgEmbed.addField("Set Up", "Use the `setchannel` command to specify where updates should go.");
       msgEmbed.addField("Commands", "Commands can only be executed by users with  Administrator permissions.");
@@ -56,7 +57,7 @@ class Help {
     // Send response to Discord
     message.channel.send(msgEmbed)
       .catch((err) => {
-          console.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+          logger.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
       });
   }
 }
