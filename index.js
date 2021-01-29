@@ -251,7 +251,7 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
   for (let i = 0; i < targetChannels.length; i++) {
     const discordChannel = targetChannels[i];
 
-    const liveMsgDiscrim = `${discordChannel.guild.id}_${discordChannel.id}_${stream.user_name.toLowerCase()}`;
+    const liveMsgDiscrim = `${discordChannel.guild.id}_${discordChannel.id}_${streamData.user_name.toLowerCase()}`;
 
     if (discordChannel) {
       try {
