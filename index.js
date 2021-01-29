@@ -64,8 +64,9 @@ client.on('ready', () => {
 
 // When client gets an error, it logs out
 // Need to log back in so we can continue
-client.on('error', () => {
-  logger.log('[Discord]', 'Error encountered. Logging back in.');
+client.on('error', err => {
+  logger.error('[Discord]', 'Error encountered. Logging back in.');
+  logger.error(err);
   client.login(process.env.DISCORD_BOT_TOKEN);
 });
 
@@ -91,8 +92,19 @@ client.on("guildDelete", guild => {
   syncServerList(false);
 });
 
-let lastTextReplyAt = 0;
+client.on("reconnecting", message => {
+    logger.warn(`[Discord]`, `Bot reconnecting`);
+});
 
+client.on("resume", message => {
+    logger.warn(`[Discord]`, `Bot reconnected as ${client.user.tag}`);
+});
+client.on("disconnect", message => {
+    logger.error(`[Discord]`, `Bot disconnected. Attempting to reconnect.`);
+    client.login(process.env.DISCORD_BOT_TOKEN);
+});
+
+// Message / Command parsing
 client.on('message', message => {
   // Empty or bot message
   if (!message.content || message.author.bot) return;
