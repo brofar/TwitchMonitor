@@ -230,15 +230,20 @@ function CleanDiscordHistory() {
   logger.log('[CleanDiscordHistory]', `Cleaned all posts.`);
 }
 
+// Periodically update channel list
+setTimeout(syncServerList, 60000, false);
+
 TwitchMonitor.onChannelLiveUpdate((streamData) => {
   const isLive = (streamData.type === "live");
 
   logger.log(`Client Status: ${client.ws.status}`)
 
   // Refresh channel list
+  /*
   try {
     syncServerList(false);
   } catch (e) { }
+  */
 
   // Update activity
   StreamActivity.setChannelOnline(streamData);
