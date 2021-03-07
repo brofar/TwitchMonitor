@@ -248,7 +248,7 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
   StreamActivity.setChannelOnline(streamData);
 
   // Generate message
-  const msgFormatted = `${streamData.user_name} went live on Twitch!`;
+  const msgFormatted = ''; //`${streamData.user_name} went live on Twitch!`;
   const msgEmbed = LiveEmbed.createForStream(streamData);
 
   // Broadcast to all target channels
@@ -315,7 +315,7 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
               // Unable to retrieve message object for editing
               if (e.message === "Unknown Message") {
                 // Specific error: the message does not exist, most likely deleted.
-                logger.warn('[Discord]', `The message for ${liveMsgDiscrim} does not exist, most likely deleted.`);
+                logger.warn('[Discord]', `Message for ${streamData.user_name} in ${discordChannel.guild.name} does not exist, most likely deleted. Will repost on next refresh.`);
 
                 delete messageHistory[liveMsgDiscrim];
                 liveMessageDb.put('history', messageHistory);
