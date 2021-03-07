@@ -155,7 +155,7 @@ class StreamActivity {
   static setChannelOnline(stream) {
     this.onlineChannels[stream.user_name] = stream;
 
-    this.updateActivity();
+    //this.updateActivity();
   }
 
   /**
@@ -164,7 +164,7 @@ class StreamActivity {
   static setChannelOffline(stream) {
     delete this.onlineChannels[stream.user_name];
 
-    this.updateActivity();
+    //this.updateActivity();
   }
 
   /**
@@ -230,20 +230,19 @@ function CleanDiscordHistory() {
   logger.log('[CleanDiscordHistory]', `Cleaned all posts.`);
 }
 
-// Periodically update channel list
-setTimeout(syncServerList, 60000, false);
+// Periodically update channel list & status
+setTimeout(discordMaintenance, 60000);
+
+function discordMaintenance() {
+  logger.log('Performing periodic discord update functions.');
+  syncServerList(false);
+  StreamActivity.updateActivity();
+}
 
 TwitchMonitor.onChannelLiveUpdate((streamData) => {
   const isLive = (streamData.type === "live");
 
   logger.log(`Client Status: ${client.ws.status}`)
-
-  // Refresh channel list
-  /*
-  try {
-    syncServerList(false);
-  } catch (e) { }
-  */
 
   // Update activity
   StreamActivity.setChannelOnline(streamData);
