@@ -13,12 +13,12 @@ class Logger {
 
     static warn(...message) {
         if (LOG_LEVEL >= 2)
-            console.log(this.now(), message.join(" "));
+            console.warn(this.now(), message.join(" "));
     }
 
     static error(...message) {
         if (LOG_LEVEL >= 1)
-            console.log(this.now(), message.join(" "));
+            console.error(this.now(), message.join(" "));
     }
 }
 

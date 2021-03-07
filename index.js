@@ -4,7 +4,6 @@ const Dotenv = require('dotenv').config();
 
 const Discord = require('discord.js');
 const client = new Discord.Client();
-global.discordJsClient = client;
 client.commands = new Discord.Collection();
 
 const DiscordChannelSync = require("./discord-channel-sync");
@@ -147,6 +146,7 @@ client.on('message', message => {
 logger.log('[Discord]', 'Logging in...');
 client.login(process.env.DISCORD_BOT_TOKEN);
 
+
 // Activity updater
 class StreamActivity {
   /**
@@ -232,6 +232,8 @@ function CleanDiscordHistory() {
 
 TwitchMonitor.onChannelLiveUpdate((streamData) => {
   const isLive = (streamData.type === "live");
+
+  logger.log(`Client Status: ${client.ws.status}`)
 
   // Refresh channel list
   try {
@@ -333,13 +335,13 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
 
             discordChannel.send(msgToSend, msgOptions)
               .then((message) => {
-                logger.log('[Discord]', `Sent announce msg to #${discordChannel.name} on ${discordChannel.guild.name}`)
+                logger.log('[Discord]', `Sent announce msg to #${discordChannel.name} on ${discordChannel.guild.name} for ${streamData.user_name}: ${message}`)
 
                 messageHistory[liveMsgDiscrim] = message.id;
                 liveMessageDb.put('history', messageHistory);
               })
               .catch((err) => {
-                logger.log('[Discord]', `Could not send announce msg to #${discordChannel.name} on ${discordChannel.guild.name}:`, err.message);
+                logger.log('[Discord]', `Could not send announce msg to #${discordChannel.name} on ${discordChannel.guild.name} for ${streamData.user_name}:`, err.message);
               });
           } else {
             logger.log('[Discord]', `[${discordChannel.guild.name}]`, `[${discordChannel.name}]`, `${msgFormatted}`);
