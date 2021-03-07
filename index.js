@@ -307,7 +307,7 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
               } else {
                 // https://discordjs.guide/popular-topics/errors.html#path
                 existingMsg.edit(msgFormatted, { embed: msgEmbed }).catch((e) => {
-                  logger.warn('[Discord]', `Edit Error: ${e.message}.`);
+                  logger.warn('[Discord]', `Edit Error for ${streamData.user_name} in ${discordChannel.guild.name}: ${e.message}.`);
                 });
               }
             })
@@ -339,7 +339,7 @@ TwitchMonitor.onChannelLiveUpdate((streamData) => {
 
             discordChannel.send(msgToSend, msgOptions)
               .then((message) => {
-                logger.log('[Discord]', `Sent announce msg to #${discordChannel.name} on ${discordChannel.guild.name} for ${streamData.user_name}: ${message}`)
+                logger.log('[Discord]', `Sent announce msg to #${discordChannel.name} on ${discordChannel.guild.name} for ${streamData.user_name}.`)
 
                 messageHistory[liveMsgDiscrim] = message.id;
                 liveMessageDb.put('history', messageHistory);
