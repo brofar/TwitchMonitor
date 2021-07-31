@@ -1,0 +1,19 @@
+CREATE TABLE livemessages (
+  guildid VARCHAR(60) NOT NULL,
+  channelid VARCHAR(60) NOT NULL,
+  messageid VARCHAR(60) NOT NULL,
+  streamer VARCHAR(60) NOT NULL,
+  PRIMARY KEY (guildId, channelId, messageId, streamer)
+);
+
+CREATE TABLE monitor (
+  guildid VARCHAR(60) NOT NULL,
+  streamer VARCHAR(60) NOT NULL,
+  PRIMARY KEY (guildId, streamer)
+);
+
+CREATE TABLE config (
+  guildid VARCHAR(60) PRIMARY KEY,
+  prefix VARCHAR(1),
+  channelid VARCHAR(60)
+);

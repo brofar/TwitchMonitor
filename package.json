@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "axios": "^0.21.1",
+    "discord.js": "^12.5.3",
+    "dotenv": "^8.2.0",
+    "events": "^3.3.0",
+    "fs": "^0.0.1-security",
+    "humanize-duration": "^3.25.2",
+    "moment": "^2.29.1",
+    "postgres": "^1.0.2"
+  }
+}
