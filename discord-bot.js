@@ -73,7 +73,7 @@ class bot {
             if (!txtLower.length) return;
 
             // If the sender isn't an admin, ignore.
-            if (!message.member.hasPermission("ADMINISTRATOR")) return;
+            if (!message.member.hasPermission("MANAGE_CHANNELS")) return;
 
             // Get the guild in which the message was sent
             let _guild = await db.GetConfig(message.guild.id);
