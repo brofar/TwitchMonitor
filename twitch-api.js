@@ -4,7 +4,6 @@ const axios = require('axios');
 
 /* Local */
 const log = require('./log');
-const db = require('./db');
 
 /**
  * Twitch Helix API helper ("New Twitch API").
