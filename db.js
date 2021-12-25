@@ -13,6 +13,40 @@ const className = '[db]';
 
 class db {
     /**
+     * Set up the DB for the first time.
+     */
+    static async Init() {
+        // Check if DB tables exist.
+        log.log(className, `Checking for tables.`);
+        const tableExists = await sql`SELECT to_regclass('public.livemessages');`
+
+        if (tableExists.length == 0) {
+            // If they don't exist, create them.
+            log.log(className, `Tables don't exist, creating.`);
+            const tables = await sql`CREATE TABLE IF NOT EXISTS livemessages (
+                guildid VARCHAR(60) NOT NULL,
+                channelid VARCHAR(60) NOT NULL,
+                messageid VARCHAR(60) NOT NULL,
+                streamer VARCHAR(60) NOT NULL,
+                PRIMARY KEY (guildId, channelId, messageId, streamer)
+            );
+            
+            CREATE TABLE IF NOT EXISTS monitor (
+                guildid VARCHAR(60) NOT NULL,
+                streamer VARCHAR(60) NOT NULL,
+                PRIMARY KEY (guildId, streamer)
+            );
+            
+            CREATE TABLE IF NOT EXISTS config (
+                guildid VARCHAR(60) PRIMARY KEY,
+                prefix VARCHAR(1),
+                channelid VARCHAR(60)
+            );`
+        }
+        return Promise.resolve();
+    }
+
+    /**
      * Get distinct channel names from the database.
      */
     static async GetChannels() {

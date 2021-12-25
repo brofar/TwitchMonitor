@@ -13,6 +13,9 @@ const className = '[Discord]';
 
 class bot {
     async init() {
+        // Initialize the DB.
+        await db.Init();
+
         this.client = new Discord.Client();
         this.client.commands = new Discord.Collection();
 
