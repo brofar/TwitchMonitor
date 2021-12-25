@@ -19,6 +19,7 @@ class db {
         // Check if DB tables exist.
         log.log(className, `Checking for tables.`);
         const tableExists = await sql`SELECT to_regclass('public.livemessages');`
+        console.log(tableExists);
 
         if (tableExists.length == 0) {
             // If they don't exist, create them.
