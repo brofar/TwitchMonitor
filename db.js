@@ -110,7 +110,7 @@ class db {
      */
     static async NewGuild(guildId) {
         try {
-            await sql`INSERT INTO config (guildId, prefix, channelId) VALUES (${guildId}, '!', null)`;
+            await sql`INSERT INTO config (guildId, prefix, channelId) VALUES (${guildId}, '\`', null)`;
         } catch (e) {
             log.warn(className, `Couldn't create a new guild config for ${guildId}.`);
             console.warn(e);
