@@ -5,10 +5,8 @@ const postgres = require('postgres');
 /* Local */
 const log = require('./log');
 
-const sql = postgres({
-    database: process.env.DB_NAME,
-    username: process.env.DB_USER,
-    password: process.env.DB_PASS
+const sql = postgres(process.env.DATABASE_URL, {
+    ssl: 'prefer',
 });
 
 const className = '[db]';
