@@ -3,6 +3,14 @@
 # Created by https://www.toptal.com/developers/gitignore/api/dotenv,node
 # Edit at https://www.toptal.com/developers/gitignore?templates=dotenv,node
 
+.vscode/*
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
 ### dotenv ###
 .env
 
