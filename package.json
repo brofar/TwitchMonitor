@@ -11,5 +11,8 @@
   },
   "engines": {
     "node": "15.x"
+  },
+  "scripts": {
+    "start": "node app.js"
   }
 }
