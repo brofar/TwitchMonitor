@@ -25,21 +25,19 @@ class db {
         if (result === null) {
             // If they don't exist, create them.
             log.log(className, `Tables don't exist, creating.`);
-            const tables = await sql`CREATE TABLE IF NOT EXISTS livemessages (
+            const livemessages = await sql`CREATE TABLE IF NOT EXISTS livemessages (
                 guildid VARCHAR(60) NOT NULL,
                 channelid VARCHAR(60) NOT NULL,
                 messageid VARCHAR(60) NOT NULL,
                 streamer VARCHAR(60) NOT NULL,
                 PRIMARY KEY (guildId, channelId, messageId, streamer)
-            );
-            
-            CREATE TABLE IF NOT EXISTS monitor (
+            );`
+            const monitor = await sql`CREATE TABLE IF NOT EXISTS monitor (
                 guildid VARCHAR(60) NOT NULL,
                 streamer VARCHAR(60) NOT NULL,
                 PRIMARY KEY (guildId, streamer)
-            );
-            
-            CREATE TABLE IF NOT EXISTS config (
+            );`
+            const config = await sql`CREATE TABLE IF NOT EXISTS config (
                 guildid VARCHAR(60) PRIMARY KEY,
                 prefix VARCHAR(1),
                 channelid VARCHAR(60)
