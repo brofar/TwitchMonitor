@@ -20,6 +20,7 @@ Multiple streamers can be added to the watch list, at your (or any server admin'
 
 ## Installation
 (Windows) This is written for beginners, but it is expected that you at least know how to use the Windows command prompt.
+
 **Set up the Heroku App**
 1. Head over to http://heroku.com/ and create an account.
 1. In the Heroku Dashboard, click `Create new app`
