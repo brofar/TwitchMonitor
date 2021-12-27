@@ -37,7 +37,7 @@ class Twitch extends EventEmitter {
         // Get the results from Twitch
         TwitchApi.FetchStreamsByGame(gameId)
             .then(async (streams) => {
-                let streams = streams.filter(element => element.tag_ids.some(r => targetTags.includes(r)));
+                streams = streams.filter(element => element.tag_ids.some(r => targetTags.includes(r)));
                 if (streams.length > 0) {
                     // Get profile pictures for only our online users who have at least one of the required tags
                     let usernames = streams.map(a => a.user_login);
