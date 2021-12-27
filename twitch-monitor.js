@@ -39,7 +39,7 @@ class Twitch extends EventEmitter {
             .then(async (streams) => {
                 if (streams.length > 0) {
                     // Get profile pictures for only our online users who have at least one of the required tags
-                    console.log(tag_ids);
+                    console.log(streams);
                     let speedrunners = streams.filter(element => element.tag_ids.some(r => targetTags.includes(r)));
                     let usernames = speedrunners.map(a => a.user_login);
                     let users = await TwitchApi.FetchUsers(usernames);
