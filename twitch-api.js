@@ -44,15 +44,14 @@ class TwitchApi {
    * Twitch only allows requests for 100 users at a time. Recurses through
    * to retrieve all stream info.
    *
-   * @param {string[]}   channelNames  Array of channel names to check.
-   * @param {string[]}   [streamData]  Array of results (for recursion).
+   * @param {string[]}   gameId  Game id to check.
    *
    * @return {string[]}  Array of stream information.
    */
-  static FetchStreams(channelNames) {
+  static FetchStreamsByGame(gameId) {
     return new Promise((resolve, reject) => {
       let baseUrl = `/streams`;
-      this.GetTwitchData(baseUrl, "user_login", channelNames, [], resolve, reject);
+      this.GetTwitchData(baseUrl, "game_id", [gameId], [], resolve, reject);
     });
   }
 

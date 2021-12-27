@@ -32,11 +32,6 @@ class db {
                 streamer VARCHAR(60) NOT NULL,
                 PRIMARY KEY (guildId, channelId, messageId, streamer)
             );`
-            const monitor = await sql`CREATE TABLE IF NOT EXISTS monitor (
-                guildid VARCHAR(60) NOT NULL,
-                streamer VARCHAR(60) NOT NULL,
-                PRIMARY KEY (guildId, streamer)
-            );`
             const config = await sql`CREATE TABLE IF NOT EXISTS config (
                 guildid VARCHAR(60) PRIMARY KEY,
                 prefix VARCHAR(1),
@@ -44,18 +39,6 @@ class db {
             );`
         }
         return Promise.resolve();
-    }
-
-    /**
-     * Get distinct channel names from the database.
-     */
-    static async GetChannels() {
-        const users = await sql`SELECT DISTINCT streamer FROM monitor`
-
-        // Transform the result into an array of values
-        let result = users.map(a => a.streamer);
-
-        return Promise.resolve(result);
     }
 
     /**
@@ -82,11 +65,6 @@ class db {
             console.warn(e);
         }
         return Promise.resolve();
-    }
-
-    static async GetGuildsPerStreamer(streamerArray) {
-        const streamers = await sql`SELECT * FROM monitor WHERE streamer IN (${streamerArray})`
-        return Promise.resolve(streamers);
     }
 
     /**
@@ -124,7 +102,6 @@ class db {
     static async KillGuild(guildId) {
         try {
             await sql`DELETE FROM config WHERE guildId = ${guildId}`;
-            await sql`DELETE FROM monitor WHERE guildId = ${guildId}`;
             await sql`DELETE FROM livemessages WHERE guildId = ${guildId}`;
         } catch (e) {
             log.warn(className, `Couldn't remove guild config for ${guildId}.`);
@@ -144,43 +121,6 @@ class db {
             console.log(e);
         }
         return Promise.resolve();
-    }
-
-    /**
-     * Add a streamer to a guild
-     */
-    static async AddStreamers(streamers) {
-        try {
-            await sql`INSERT INTO monitor ${sql(streamers, 'guildid', 'streamer')} ON CONFLICT DO NOTHING`;
-        } catch (e) {
-            log.warn(className, `Couldn't create a new guild config for ${guildId}.`);
-            console.warn(e);
-        }
-        return Promise.resolve();
-    }
-
-    /**
-     * Remove a streamer from a guild
-     */
-    static async RemStreamer(guildid, streamer) {
-        try {
-            await sql`DELETE FROM monitor WHERE streamer = ${streamer} AND guildid = ${guildid}`;
-        } catch (e) {
-            log.warn(className, `Couldn't create a new guild config for ${guildId}.`);
-            console.warn(e);
-        }
-        return Promise.resolve();
-    }
-    /**
-     * List watched streamers from a guild.
-     */
-    static async ListStreamers(guildid) {
-        const users = await sql`SELECT streamer FROM monitor WHERE guildid = ${guildid}`
-
-        // Transform the result into an array of values
-        let result = users.map(a => a.streamer);
-
-        return Promise.resolve(result);
     }
 }
 

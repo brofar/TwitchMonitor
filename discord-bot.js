@@ -141,26 +141,25 @@ class bot {
         // Grab all live messages from db
         let messages = await db.GetMessages();
 
+        // Grab all guilds
+        let configs = await db.GetAllConfigs();
+        let guilds = configs.map(a => a.guildid);
+
         // Grab the monitor list for these streamers
         let streamerNames = streams.map(a => a.user_login);
-        let monitorList = (streamerNames.length > 0) ? await db.GetGuildsPerStreamer(streamerNames) : [];
+        //let monitorList = (streamerNames.length > 0) ? await db.GetGuildsPerStreamer(streamerNames) : [];
 
         // Streamers in discord messages but no longer live (messages to be deleted)
         let offlineStreamers = messages.filter(element => !streamerNames.includes(element.streamer));
 
         // Streamers deleted from a guild's watch list.
-        let deletedStreamers = messages.filter(element => monitorList.findIndex(e => element.streamer == e.streamer && element.guildid == e.guildid) === -1);
+        //let deletedStreamers = messages.filter(element => monitorList.findIndex(e => element.streamer == e.streamer && element.guildid == e.guildid) === -1);
 
-        let messagesToDelete = [...offlineStreamers, ...deletedStreamers];
+        let messagesToDelete = [...offlineStreamers];
         this.DeleteMessages(messagesToDelete);
 
         // Process non-deleted stuff now.
         for (const stream of streams) {
-            const streamerFilter = (element) => element.streamer == stream.user_login;
-
-            // List of guild ids watching this streamer
-            let guilds = monitorList.filter(streamerFilter).map(a => a.guildid);
-
             for (const guild of guilds) {
                 let message = messages.findIndex(element => element.streamer == stream.user_login && element.guildid == guild);
                 if (message !== -1) {

@@ -6,6 +6,10 @@ const log = require('./log');
 const db = require('./db');
 const TwitchApi = require('./twitch-api');
 
+const gameId = 11282; //FF8
+//                  speedrun
+const targetTags = ['7cefbf30-4c3e-4aa7-99cd-70aabb662f27'];
+
 // Pull distinct watched channels from DB
 // Check Twitch for online status every x ms
 
@@ -28,23 +32,15 @@ class Twitch extends EventEmitter {
     }
 
     async Refresh() {
-        // Get channel list
-        let channels = await db.GetChannels();
-
-        // Don't waste resources if we're not watching any channels
-        if (!channels.length || channels.length == 0) {
-            log.warn(this.className, 'No streamers to watch.');
-            return;
-        }
-
-        log.log(this.className, `Polling ${channels.length} channels.`);
+        log.log(this.className, `Polling channels.`);
 
         // Get the results from Twitch
-        TwitchApi.FetchStreams(channels)
+        TwitchApi.FetchStreamsByGame(gameId)
             .then(async (streams) => {
                 if (streams.length > 0) {
-                    // Get profile pictures for only our online users
-                    let usernames = streams.map(a => a.user_login);
+                    // Get profile pictures for only our online users who have at least one of the required tags
+                    let speedrunners = streams.filter(element => element.tag_ids.some(r => targetTags.includes(r)));
+                    let usernames = speedrunners.map(a => a.user_login);
                     let users = await TwitchApi.FetchUsers(usernames);
 
                     // Merge the user's profile pic into their stream object.
