@@ -55,7 +55,7 @@ Multiple streamers can be added to the watch list, at your (or any server admin'
 1. Type `heroku scale web=0 worker=1`
 
 **Invite the Bot to your Discord Server**
-1. Go to `https://discord.com/api/oauth2/authorize?client_id=BOT_CLIENT_ID&permissions=92160&scope=bot` (Swap `BOT_CLIENT_ID` in the URL above for your [Discord app's client id](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token).)
+1. Go to `https://discord.com/api/oauth2/authorize?client_id=BOT_CLIENT_ID&permissions=8&scope=bot` (Swap `BOT_CLIENT_ID` in the URL above for your [Discord app's client id](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token).)
 	* Ensure that, at minimum, the bot has Send Messages, Manage Messages, and Embed Links in the announce channel.
 1. Start by issuing the  `` `channel`` command (`` `channel #live-now``) to tell the bot where to post its messages.
 1. Add streamers by issuing `` `add streamer1 streamer2 etc etc``
