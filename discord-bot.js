@@ -205,10 +205,10 @@ class bot {
             .then((existingMsg) => {
                 // Delete the message from discord
                 existingMsg.delete()
-                    .then(msg => console.log(`Deleted message from ${msg.guild.name}.`))
-                    .catch(console.error);
+                    .then(msg => log.log(className, `Deleted message from ${msg.guild.name}.`))
+                    .catch(err => log.error(className, err));
             })
-            .catch(console.error);
+            .catch(err => log.error(className, err));
     }
 
     /**
