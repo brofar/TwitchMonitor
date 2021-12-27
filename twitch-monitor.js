@@ -44,7 +44,9 @@ class Twitch extends EventEmitter {
                     console.log("---------------------------------------------");
                     console.log(speedrunners);
                     let usernames = speedrunners.map(a => a.user_login);
+                    console.log(usernames);
                     let users = await TwitchApi.FetchUsers(usernames);
+                    console.log(users);
 
                     // Merge the user's profile pic into their stream object.
                     for (const user of users) {
