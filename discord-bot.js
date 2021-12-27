@@ -267,6 +267,7 @@ class bot {
                 // Unable to retrieve message object
                 if (e.message === "Unknown Message") {
                     // Specific error: the message does not exist, most likely deleted.
+                    this.SendLiveMessage(guildId, channelId, streamer);
                     return;
                 }
             });
