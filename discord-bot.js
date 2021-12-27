@@ -263,7 +263,7 @@ class bot {
                         log.warn(className, '[UpdateMessage]', `Edit error for ${streamer.user_name} in ${channel.guild.name}: ${e.message}.`);
                     });
             })
-            .catch((e) => {
+            .catch(async (e) => {
                 // Unable to retrieve message object
                 if (e.message === "Unknown Message") {
                     // Specific error: the message does not exist, most likely deleted.
