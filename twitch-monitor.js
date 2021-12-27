@@ -37,16 +37,11 @@ class Twitch extends EventEmitter {
         // Get the results from Twitch
         TwitchApi.FetchStreamsByGame(gameId)
             .then(async (streams) => {
+                let streams = streams.filter(element => element.tag_ids.some(r => targetTags.includes(r)));
                 if (streams.length > 0) {
                     // Get profile pictures for only our online users who have at least one of the required tags
-                    console.log(streams);
-                    let speedrunners = streams.filter(element => element.tag_ids.some(r => targetTags.includes(r)));
-                    console.log("---------------------------------------------");
-                    console.log(speedrunners);
-                    let usernames = speedrunners.map(a => a.user_login);
-                    console.log(usernames);
+                    let usernames = streams.map(a => a.user_login);
                     let users = await TwitchApi.FetchUsers(usernames);
-                    console.log(users);
 
                     // Merge the user's profile pic into their stream object.
                     for (const user of users) {
