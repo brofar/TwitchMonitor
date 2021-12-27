@@ -135,9 +135,6 @@ class bot {
      *
      */
     async ProcessStreams(streams) {
-        // Grab all configs
-        let configs = await db.GetAllConfigs();
-
         // Grab all live messages from db
         let messages = await db.GetMessages();
 
