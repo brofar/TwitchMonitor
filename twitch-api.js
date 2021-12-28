@@ -51,7 +51,7 @@ class TwitchApi {
   static FetchStreamsByGame(gameId) {
     return new Promise((resolve, reject) => {
       let baseUrl = `/streams`;
-      this.GetTwitchData(baseUrl, "game_id", [gameId], [], resolve, reject);
+      this.GetTwitchData(baseUrl, "game_id", gameId, [], resolve, reject);
     });
   }
 
