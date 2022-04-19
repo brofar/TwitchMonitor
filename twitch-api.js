@@ -78,7 +78,6 @@ class TwitchApi {
       })
         .then(res => {
           let data = res.data;
-          log.log(className, `Got Token: ${data.access_token}.`);
           resolve(data.access_token);
         })
         .catch(err => {
