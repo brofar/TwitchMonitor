@@ -11,13 +11,14 @@ const log = require('./log');
 const className = '[Twitch-API]';
 
 class TwitchApi {
-  static get requestOptions() {
-    // Automatically remove "oauth:" prefix if it's present
-    const oauthPrefix = "oauth:";
-    let oauthBearer = process.env.TWITCH_OAUTH_TOKEN;
-    if (oauthBearer.startsWith(oauthPrefix)) {
-      oauthBearer = oauthBearer.substr(oauthPrefix.length);
-    }
+  constructor() {
+    this.oauthToken = "";
+  }
+
+  static async RequestOptions() {
+    // Get the oauth token.
+    let oauthBearer = await this.GetTwitchToken();
+
     // Construct default request options
     return {
       baseURL: "https://api.twitch.tv/helix/",
@@ -36,6 +37,69 @@ class TwitchApi {
     } else {
       log.error(className, 'API request failed with error:', err.message || err);
     }
+  }
+
+  /** Token Generation
+   * "Any third-party app that calls the Twitch APIs and maintains an OAuth 
+   * session must call the /validate endpoint to verify that the access 
+   * token is still valid." - Twitch
+   */
+  static async ValidateToken() {
+    log.log(className, `Validating Twitch Token.`);
+    return new Promise((resolve, reject) => {
+      let url = "https://id.twitch.tv/oauth2/validate";
+      let opt = {
+        headers: {
+          "Client-ID": process.env.TWITCH_CLIENT_ID,
+          "Authorization": `Bearer ${this.oauthToken}`
+        }
+      };
+
+      axios.get(url, opt)
+        .then(res => {
+          log.log(className, `Twitch token is valid.`);
+          resolve(true);
+        })
+        .catch(err => {
+          log.log(className, `Twitch token NOT valid.`);
+          this.HandleApiError(err);
+          resolve(false);
+        })
+    });
+  }
+
+  static GetToken() {
+    log.log(className, `Getting a new Twitch Token.`);
+    return new Promise((resolve, reject) => {
+      axios.post('https://id.twitch.tv/oauth2/token', {
+        client_id: process.env.TWITCH_CLIENT_ID,
+        client_secret: process.env.TWITCH_CLIENT_SECRET,
+        grant_type: 'client_credentials'
+      })
+        .then(res => {
+          let data = res.data;
+          log.log(className, `Got Token: ${data.access_token}.`);
+          resolve(data.access_token);
+        })
+        .catch(err => {
+          this.HandleApiError(err);
+          reject(err);
+        });
+    });
+  }
+
+  static GetTwitchToken() {
+    return new Promise(async (resolve, reject) => {
+      // Validate our token against Twitch.
+      let valid = await this.ValidateToken();
+
+      if (valid === false) {
+        // If our token isn't valid, get a new one.
+        this.oauthToken = await this.GetToken();
+      }
+
+      resolve(this.oauthToken);
+    });
   }
 
   /**
@@ -87,7 +151,7 @@ class TwitchApi {
    *
    * @return {string[]}  Array of stream information.
    */
-  static GetTwitchData(baseUrl, paramName, paramValues, twitchData, resolve, reject) {
+  static async GetTwitchData(baseUrl, paramName, paramValues, twitchData, resolve, reject) {
 
     log.log(className, `Calling Twitch${baseUrl}`);
 
@@ -100,7 +164,9 @@ class TwitchApi {
     // Add parameters to the base URL
     let url = `${baseUrl}?${paramName}=${firstHundredValues.join(`&${paramName}=`)}`;
 
-    axios.get(url, this.requestOptions)
+    let opt = await this.RequestOptions();
+
+    axios.get(url, opt)
       .then(res => {
         const retrivedInfo = twitchData.concat(res.data.data || []);
 

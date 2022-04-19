@@ -38,11 +38,9 @@ Multiple streamers can be added to the watch list, at your (or any server admin'
 1. Copy the token into `DISCORD_BOT_TOKEN` in your `.env` file.
 
 **Get Twitch Token**
-1. Generate Twitch `Client ID` tokens at the [Twitch Developer Console](https://dev.twitch.tv/console/apps) (When it asks, set the OAuth Redirect URL to `http://localhost`)
+1. Create a Twitch app on the [Twitch Developer Console](https://dev.twitch.tv/console/apps) (When it asks, set the OAuth Redirect URL to `http://localhost`)
 1. Copy the Twitch `Client ID` into the `TWITCH_CLIENT_ID` in your `.env` file.
-1. Navigate to `https://id.twitch.tv/oauth2/authorize?client_id=TWITCH_CLIENT_ID&response_type=token&redirect_uri=http://localhost`, replacing `TWITCH_CLIENT_ID` with your actual Client ID.
-1. Log in with Twitch.
-1. Grab the `access_token` from the URL in your browser, and store it as `TWITCH_OAUTH_TOKEN` in `.env` (the URL will be something like `xxxx.twitch.tv?xxxxx&access_token=yyyyyy&blahblah`, you want the "yyyyyy" portion).
+1. Copy the Twitch `Client Secret` into the `TWITCH_CLIENT_SECRET` in your `.env` file.
 1. Save your `.env` file.
 
 **Upload Bot to Heroku**
