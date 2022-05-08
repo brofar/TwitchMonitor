@@ -6,7 +6,7 @@ const log = require('./log');
 const db = require('./db');
 const TwitchApi = require('./twitch-api');
 
-const gameId = [11282, 1736914392]; //FF8
+const gameId = [11282, 514788, 1736914392]; //FF8
 //                  speedrun
 const targetTags = ['7cefbf30-4c3e-4aa7-99cd-70aabb662f27'];
 
@@ -37,7 +37,9 @@ class Twitch extends EventEmitter {
         // Get the results from Twitch
         TwitchApi.FetchStreamsByGame(gameId)
             .then(async (streams) => {
+                logger.log(this.className, `Found ${streams.length} FF8 Stream(s).`);
                 streams = streams.filter(element => element.tag_ids.some(r => targetTags.includes(r)));
+                logger.log(this.className, `Found ${streams.length} FF8 Stream(s) with the speedrun tag.`);
                 if (streams.length > 0) {
                     // Get profile pictures for only our online users who have at least one of the required tags
                     let usernames = streams.map(a => a.user_login);
