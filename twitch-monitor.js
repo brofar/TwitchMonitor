@@ -37,9 +37,9 @@ class Twitch extends EventEmitter {
         // Get the results from Twitch
         TwitchApi.FetchStreamsByGame(gameId)
             .then(async (streams) => {
-                logger.log(this.className, `Found ${streams.length} FF8 Stream(s).`);
+                log.log(this.className, `Found ${streams.length} FF8 Stream(s).`);
                 streams = streams.filter(element => element.tag_ids.some(r => targetTags.includes(r)));
-                logger.log(this.className, `Found ${streams.length} FF8 Stream(s) with the speedrun tag.`);
+                log.log(this.className, `Found ${streams.length} FF8 Stream(s) with the speedrun tag.`);
                 if (streams.length > 0) {
                     // Get profile pictures for only our online users who have at least one of the required tags
                     let usernames = streams.map(a => a.user_login);
