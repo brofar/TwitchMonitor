@@ -15,7 +15,7 @@ Multiple streamers can be added to the watch list, at your (or any server admin'
 * Monitors Twitch streamers and posts on discord when they're live.
 * Continously updates streamer card in the channel with uptime/game changes + screenshot.
 * Deletes streamer card from channel when streamer goes offline.
-* Discord commands to add/remove/list watched streamers (\`add / \`rm / \`list).
+* Discord commands to add/remove/list watched streamers (\`add / \`del / \`list).
 * Can be run entirely on the Heroku free tier.
 
 ## Installation
