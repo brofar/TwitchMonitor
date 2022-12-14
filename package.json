@@ -9,9 +9,6 @@
     "moment": "^2.29.1",
     "postgres": "^1.0.2"
   },
-  "engines": {
-    "node": "15.x"
-  },
   "scripts": {
     "start": "node app.js"
   }
