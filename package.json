@@ -7,7 +7,7 @@
     "fs": "^0.0.1-security",
     "humanize-duration": "^3.25.2",
     "moment": "^2.29.1",
-    "postgres": "^1.0.2"
+    "postgres": "^3.3.2"
   },
   "scripts": {
     "start": "node app.js"

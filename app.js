@@ -20,6 +20,6 @@ const log = require('./log');
         bot.UpdateWatchStatus(streamers.length);
         bot.ProcessStreams(streamers);
     });
-    
+
     twitch.Start();
 })();
