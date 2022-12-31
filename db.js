@@ -85,7 +85,7 @@ class db {
     }
 
     static async GetGuildsPerStreamer(streamerArray) {
-        const streamers = await sql`SELECT * FROM monitor WHERE streamer IN (${streamerArray})`
+        const streamers = await sql`SELECT * FROM monitor WHERE streamer IN  ${ sql(streamerArray) }`
         return Promise.resolve(streamers);
     }
 
@@ -171,6 +171,7 @@ class db {
         }
         return Promise.resolve();
     }
+
     /**
      * List watched streamers from a guild.
      */
@@ -182,6 +183,15 @@ class db {
 
         return Promise.resolve(result);
     }
+
+    /**
+     * List watched streamers from a guild.
+     * Returns an array of objects.
+     */
+        static async GetGuildDebugInfo(guildId) {
+            const result = await sql`SELECT * FROM config WHERE guildid = ${guildId} LIMIT 1`    
+            return Promise.resolve(result);
+        }
 }
 
 module.exports = db;
