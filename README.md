@@ -76,9 +76,13 @@ Usage: `` `channel #live-now``
 ### `prefix
 *Changes the bot's command prefix.*
 
-**Modifying the Criteria**
+# Modifying the Criteria
 If you want to use this bot to monitor different games or tags (e.g. FFX speedruns), you can change either/both of these lines in `twitch-monitor.js`:
 
 Twitch Game ID
+
 ```const gameId = [11282, 514788, 1736914392];```
+
+Tags to check for
+
 ```const targetTags = ['speedrun', 'speedrunning'];```
