@@ -7,8 +7,9 @@ const db = require('./db');
 const TwitchApi = require('./twitch-api');
 
 const gameId = [11282, 514788, 1736914392]; //FF8
-//                  speedrun
-const targetTags = ['7cefbf30-4c3e-4aa7-99cd-70aabb662f27'];
+
+// Lowercase tags here.
+const targetTags = ['speedrun', 'speedrunning'];
 
 // Pull distinct watched channels from DB
 // Check Twitch for online status every x ms
@@ -38,21 +39,21 @@ class Twitch extends EventEmitter {
         TwitchApi.FetchStreamsByGame(gameId)
             .then(async (streams) => {
                 log.log(this.className, `Found ${streams.length} FF8 Stream(s).`);
-                streams = streams.filter(element => element.tag_ids.some(r => targetTags.includes(r)));
-                log.log(this.className, `Found ${streams.length} FF8 Stream(s) with the speedrun tag.`);
-                if (streams.length > 0) {
+                let speedStreams = streams.filter(element => element.tags.some(r => targetTags.includes(r.toLowerCase())));
+                log.log(this.className, `Found ${speedStreams.length} FF8 Stream(s) with the speedrun tag.`);
+                if (speedStreams.length > 0) {
                     // Get profile pictures for only our online users who have at least one of the required tags
-                    let usernames = streams.map(a => a.user_login);
+                    let usernames = speedStreams.map(a => a.user_login);
                     let users = await TwitchApi.FetchUsers(usernames);
 
                     // Merge the user's profile pic into their stream object.
                     for (const user of users) {
-                        const index = streams.findIndex(element => element.user_id == user.id);
+                        const index = speedStreams.findIndex(element => element.user_id == user.id);
                         if (index !== -1)
-                            streams[index].profile_image_url = user.profile_image_url;
+                        speedStreams[index].profile_image_url = user.profile_image_url;
                     }
                 }
-                this.emit('streamer-refresh', streams);
+                this.emit('streamer-refresh', speedStreams);
             })
             .catch((err) => {
                 log.warn(this.className, 'Error in users refresh:', err);

@@ -20,7 +20,6 @@ class db {
         log.log(className, `Checking for tables.`);
         const tableExists = await sql`SELECT to_regclass('public.livemessages');`
         let result = tableExists[0].to_regclass;
-        console.log(result);
 
         if (result === null) {
             // If they don't exist, create them.
@@ -65,6 +64,11 @@ class db {
             console.warn(e);
         }
         return Promise.resolve();
+    }
+
+    static async GetGuildsPerStreamer(streamerArray) {
+        const streamers = await sql`SELECT * FROM monitor WHERE streamer IN (${streamerArray})`
+        return Promise.resolve(streamers);
     }
 
     /**

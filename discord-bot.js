@@ -120,7 +120,7 @@ class bot {
      *
      */
     UpdateWatchStatus(numStreams) {
-        let activity = `${numStreams} stream${numStreams == 1 ? "" : "s"}`;
+        let activity = `${numStreams} speedrun${numStreams == 1 ? "" : "s"}`;
         this.client.user.setActivity(activity, {
             "type": "WATCHING"
         });
