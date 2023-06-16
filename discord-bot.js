@@ -317,6 +317,10 @@ class bot {
             units: ["y", "mo", "w", "d", "h", "m"]
         }), true);
 
+        msgEmbed.addField("Tags", streamer.tags.join(", "));
+
+        msgEmbed.setFooter(`Language: ${streamer.language}`);
+
         return msgEmbed;
     }
 
