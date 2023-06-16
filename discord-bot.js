@@ -279,7 +279,7 @@ class bot {
     CreateMessage(streamer) {
         let msgEmbed = new Discord.MessageEmbed();
         msgEmbed.setColor("#9146ff");
-        msgEmbed.setURL(`https://twitch.tv/${streamer.user_name.toLowerCase()}`);
+        msgEmbed.setURL(`https://twitch.tv/${streamer.user_login.toLowerCase()}`);
 
         // Thumbnail
         let thumbUrl = streamer.profile_image_url;
