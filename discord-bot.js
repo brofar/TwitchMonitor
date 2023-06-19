@@ -143,13 +143,13 @@ class bot {
         let configs = await db.GetAllConfigs();
         let guilds = configs.map(a => a.guildid);
 
-        // Grab the monitor list for these streamers
-        let streamerNames = streams.map(a => a.user_login);
-
         //! Get blacklist - GLOBAL. Need to make it per-guild later.
         const bl = await db.GetAllBlacklists();
         let blNames = bl.map(a => a.user_login);
         streams = streams.filter(x => !blNames.includes(x.user_login.toLowerCase()));
+        
+        // Grab the monitor list for these streamers
+        let streamerNames = streams.map(a => a.user_login);
 
         // Update bot's watch status
         this.UpdateWatchStatus(streams.length);
