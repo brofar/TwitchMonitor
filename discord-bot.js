@@ -319,7 +319,7 @@ class bot {
 
         msgEmbed.addField("Tags", streamer.tags.join(", "));
 
-        msgEmbed.setFooter(`Last updated: ${moment.format('LTS Z')}`);
+        msgEmbed.setFooter(`Last updated: ${moment().format('LTS Z')}`);
 
         return msgEmbed;
     }
