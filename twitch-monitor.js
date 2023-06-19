@@ -40,7 +40,7 @@ class Twitch extends EventEmitter {
         TwitchApi.FetchStreamsByGame(gameId)
             .then(async (streams) => {
                 log.log(this.className, `Found ${streams.length} FF8 Stream(s).`);
-                let speedStreams = streams.filter(element => element.tags.some(r => targetTags.includes(r.toLowerCase())));
+                let speedStreams = streams.filter(element => element["tags"].some(r => targetTags.includes(r.toLowerCase())));
                 log.log(this.className, `Found ${speedStreams.length} FF8 Stream(s) with the speedrun tag.`);
                 if (speedStreams.length > 0) {
                     // Get profile pictures for only our online users who have at least one of the required tags
