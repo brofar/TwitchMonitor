@@ -140,7 +140,7 @@ class db {
     }
 
     /**
-     * Remove a streamer from a guild
+     * Remove a streamer from the guild's blacklist
      */
     static async RemStreamerFromBlacklist(guildid, streamer) {
         try {
@@ -153,7 +153,7 @@ class db {
     }
 
     /**
-     * List watched streamers from a guild.
+     * List blacklisted streamers for a guild.
      */
     static async ListStreamersInBlacklist(guildid) {
         const users = await sql`SELECT streamer FROM blacklist WHERE guildid = ${guildid}`
@@ -161,6 +161,14 @@ class db {
         // Transform the result into an array of values
         let result = users.map(a => a.streamer);
 
+        return Promise.resolve(result);
+    }
+
+    /**
+     * List all blacklisted streamers.
+     */
+    static async GetAllBlacklists() {
+        const result = await sql`SELECT * FROM blacklist`
         return Promise.resolve(result);
     }
 }

@@ -17,7 +17,6 @@ const log = require('./log');
     let twitch = new twitchBot();
 
     twitch.on('streamer-refresh', (streamers) => {
-        bot.UpdateWatchStatus(streamers.length);
         bot.ProcessStreams(streamers);
     });
     
