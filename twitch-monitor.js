@@ -22,7 +22,6 @@ class Twitch extends EventEmitter {
     }
 
     Start() {
-        db.Init();
         let checkIntervalMs = parseInt(process.env.TWITCH_CHECK_INTERVAL_MS);
 
         // Refresh immediately upon run
