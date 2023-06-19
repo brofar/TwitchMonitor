@@ -324,7 +324,7 @@ class bot {
 
         msgEmbed.addField("Tags", streamer.tags.join(", "));
 
-        msgEmbed.setFooter(`Last updated: ${moment().format('LTS Z')}`);
+        msgEmbed.setFooter(`Language: ${streamer.language}`);
 
         return msgEmbed;
     }
