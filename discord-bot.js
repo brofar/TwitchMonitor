@@ -120,13 +120,12 @@ class bot {
      *
      */
     UpdateWatchStatus(numStreams) {
-        /* Commenting out for now until I figure out how to calculate taking the blacklist into account.
         let activity = `${numStreams} speedrun${numStreams == 1 ? "" : "s"}`;
         this.client.user.setActivity(activity, {
             "type": "WATCHING"
         });
 
-        log.log(className, '[UpdateWatchStatus]', `Updated current activity: Watching ${activity}.`); */
+        log.log(className, '[UpdateWatchStatus]', `Updated current activity: Watching ${activity}.`);
     }
 
     /**
@@ -136,8 +135,6 @@ class bot {
      *
      */
     async ProcessStreams(streams) {
-        // Update bot's watch status
-        this.UpdateWatchStatus(streams.length);
 
         // Grab all live messages from db
         let messages = await db.GetMessages();
@@ -149,8 +146,13 @@ class bot {
         // Grab the monitor list for these streamers
         let streamerNames = streams.map(a => a.user_login);
 
-        // Get blacklist
+        //! Get blacklist - GLOBAL. Need to make it per-guild later.
         const bl = await db.GetAllBlacklists();
+        let blNames = streams.map(a => a.user_login);
+        streams = streams.filter(x => !blNames.includes(x.user_login));
+
+        // Update bot's watch status
+        this.UpdateWatchStatus(streams.length);
 
         // Streamers in discord messages but no longer live (messages to be deleted)
         let offlineStreamers = messages.filter(element => !streamerNames.includes(element.streamer));
@@ -161,18 +163,15 @@ class bot {
         // Process non-deleted stuff now.
         for (const stream of streams) {
             for (const guild of guilds) {
-                let blacklisted = bl.findIndex(element => element.streamer == stream.user_login && element.guildid == guild);
-                if (blacklisted !== -1) {
-                    let message = messages.findIndex(element => element.streamer == stream.user_login && element.guildid == guild);
-                    if (message !== -1) {
-                        // Update existing message
-                        let theMessage = messages[message];
-                        this.UpdateMessage(guild, theMessage.channelid, theMessage.messageid, stream);
-                    } else {
-                        // Create a new message
-                        let channelId = configs.find(el => el.guildid == guild).channelid;
-                        this.SendLiveMessage(guild, channelId, stream);
-                    }
+                let message = messages.findIndex(element => element.streamer == stream.user_login && element.guildid == guild);
+                if (message !== -1) {
+                    // Update existing message
+                    let theMessage = messages[message];
+                    this.UpdateMessage(guild, theMessage.channelid, theMessage.messageid, stream);
+                } else {
+                    // Create a new message
+                    let channelId = configs.find(el => el.guildid == guild).channelid;
+                    this.SendLiveMessage(guild, channelId, stream);
                 }
             }
         }
