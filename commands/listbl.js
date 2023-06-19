@@ -24,7 +24,7 @@ class ListBl {
 
     msgEmbed.setColor("#FD6A02");
     msgEmbed.setTitle(`**Twitch Monitor**`);
-    msgEmbed.addField(`Watch List (${watchedUsers.length})`, watchedUsers.length > 0 ? watchedUsers.join('\n') : "None", true);
+    msgEmbed.addField(`Blacklist (${watchedUsers.length})`, watchedUsers.length > 0 ? watchedUsers.join('\n') : "None", true);
 
     let msgToSend = "";
 
