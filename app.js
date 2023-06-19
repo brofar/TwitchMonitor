@@ -9,7 +9,7 @@ const log = require('./log');
 
 
 (async function() {
-    log.log('FF8 Bot Starting.'); 
+    log.log('FF8 Bot Starting.');
 
     let bot = new discordBot();
     await bot.init();
