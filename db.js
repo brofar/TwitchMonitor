@@ -6,7 +6,7 @@ const postgres = require('postgres');
 const log = require('./log');
 
 const sql = postgres(process.env.DATABASE_URL, {
-    ssl: {rejectUnauthorized: false},
+    ssl: { rejectUnauthorized: false },
 });
 
 const className = '[db]';
@@ -35,6 +35,10 @@ class db {
                 guildid VARCHAR(60) PRIMARY KEY,
                 prefix VARCHAR(1),
                 channelid VARCHAR(60)
+            );`
+            const blacklist = await sql`CREATE TABLE IF NOT EXISTS blacklist (
+                guildid VARCHAR(60) PRIMARY KEY,
+                streamer VARCHAR(60)
             );`
         }
         return Promise.resolve();
@@ -125,6 +129,44 @@ class db {
             console.log(e);
         }
         return Promise.resolve();
+    }
+
+    /**
+ * Add a streamer to a guild blacklist
+ */
+    static async AddStreamersToBlacklist(streamers) {
+        try {
+            await sql`INSERT INTO blacklist ${sql(streamers, 'guildid', 'streamer')} ON CONFLICT DO NOTHING`;
+        } catch (e) {
+            log.warn(className, `Couldn't create a new guild config for ${guildId}.`);
+            console.warn(e);
+        }
+        return Promise.resolve();
+    }
+
+    /**
+     * Remove a streamer from a guild
+     */
+    static async RemStreamerFromBlacklist(guildid, streamer) {
+        try {
+            await sql`DELETE FROM blacklist WHERE streamer = ${streamer} AND guildid = ${guildid}`;
+        } catch (e) {
+            log.warn(className, `Couldn't create a new guild config for ${guildId}.`);
+            console.warn(e);
+        }
+        return Promise.resolve();
+    }
+
+    /**
+     * List watched streamers from a guild.
+     */
+    static async ListStreamersInBlacklist(guildid) {
+        const users = await sql`SELECT streamer FROM blacklist WHERE guildid = ${guildid}`
+
+        // Transform the result into an array of values
+        let result = users.map(a => a.streamer);
+
+        return Promise.resolve(result);
     }
 }
 
