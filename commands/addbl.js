@@ -72,7 +72,7 @@ class AddBl {
 
         message.channel.send(msgToSend, msgOptions)
             .then((message) => {
-                log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${result.added.length} added. ${result.skipped.length} duplicates.`)
+                log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${result.added.length} added to blacklist. ${result.skipped.length} duplicates.`)
             })
             .catch((err) => {
                 log.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);

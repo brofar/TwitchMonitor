@@ -44,7 +44,7 @@ class DelBl {
 
         message.channel.send(msgToSend, msgOptions)
             .then((message) => {
-                log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${userToDelete} deleted.`)
+                log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${userToDelete} deleted from blacklist.`)
             })
             .catch((err) => {
                 log.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);

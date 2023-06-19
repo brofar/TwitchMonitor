@@ -34,7 +34,7 @@ class ListBl {
 
     message.channel.send(msgToSend, msgOptions)
       .then((message) => {
-        log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${watchedUsers.length} users listed.`);
+        log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${watchedUsers.length} blacklist users listed.`);
       })
       .catch((err) => {
         log.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
