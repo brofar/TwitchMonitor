@@ -145,7 +145,7 @@ class bot {
 
         //! Get blacklist - GLOBAL. Need to make it per-guild later.
         const bl = await db.GetAllBlacklists();
-        let blNames = bl.map(a => a.user_login);
+        let blNames = bl.map(a => a.streamer);
         streams = streams.filter(x => !blNames.includes(x.user_login.toLowerCase()));
         
         // Grab the monitor list for these streamers
