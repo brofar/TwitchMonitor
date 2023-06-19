@@ -291,17 +291,18 @@ class bot {
 
         msgEmbed.setThumbnail(thumbUrl);
 
+        // Stream title
         msgEmbed.setTitle(`:red_circle: **${streamer.user_name} is live on Twitch!**`);
         msgEmbed.addField("Title", streamer.title, false);
 
+        // Game
+        if (streamer.game_name) msgEmbed.addField("Game", streamer.game_name, false);
 
-        // Add game
-        if (streamer.game_name) {
-            msgEmbed.addField("Game", streamer.game_name, false);
-        }
+        // Status
+        msgEmbed.addField("Status", `Live / ${streamer.viewer_count} viewers`, true);
 
-        // Add status
-        msgEmbed.addField("Status", `Live with ${streamer.viewer_count} viewers`, true);
+        // Language
+        msgEmbed.addField("Language", streamer.language, true);
 
         // Set main image (stream preview)
         let imageUrl = streamer.thumbnail_url;
@@ -311,7 +312,7 @@ class bot {
         imageUrl += `?t=${thumbnailBuster}`;
         msgEmbed.setImage(imageUrl);
 
-        // Add uptime
+        // Steam uptime
         let now = moment();
         let startedAt = moment(streamer.started_at);
 
@@ -322,9 +323,11 @@ class bot {
             units: ["y", "mo", "w", "d", "h", "m"]
         }), true);
 
+        // Stream tags
         msgEmbed.addField("Tags", streamer.tags.join(", "));
 
-        msgEmbed.setFooter(`Language: ${streamer.language}`);
+        // Last updated, so we know if it's stagnant
+        msgEmbed.setFooter(`Last updated ${moment().format('LTS ZZ')}`);
 
         return msgEmbed;
     }
