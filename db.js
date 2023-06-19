@@ -18,29 +18,25 @@ class db {
     static async Init() {
         // Check if DB tables exist.
         log.log(className, `Checking for tables.`);
-        const tableExists = await sql`SELECT to_regclass('public.livemessages');`
-        let result = tableExists[0].to_regclass;
-
-        if (result === null) {
-            // If they don't exist, create them.
-            log.log(className, `Tables don't exist, creating.`);
-            const livemessages = await sql`CREATE TABLE IF NOT EXISTS livemessages (
+        // If they don't exist, create them.
+        log.log(className, `Tables don't exist, creating.`);
+        const livemessages = await sql`CREATE TABLE IF NOT EXISTS livemessages (
                 guildid VARCHAR(60) NOT NULL,
                 channelid VARCHAR(60) NOT NULL,
                 messageid VARCHAR(60) NOT NULL,
                 streamer VARCHAR(60) NOT NULL,
                 PRIMARY KEY (guildId, channelId, messageId, streamer)
             );`
-            const config = await sql`CREATE TABLE IF NOT EXISTS config (
+        const config = await sql`CREATE TABLE IF NOT EXISTS config (
                 guildid VARCHAR(60) PRIMARY KEY,
                 prefix VARCHAR(1),
                 channelid VARCHAR(60)
             );`
-            const blacklist = await sql`CREATE TABLE IF NOT EXISTS blacklist (
+        const blacklist = await sql`CREATE TABLE IF NOT EXISTS blacklist (
                 guildid VARCHAR(60) PRIMARY KEY,
                 streamer VARCHAR(60)
             );`
-        }
+
         return Promise.resolve();
     }
 
