@@ -39,6 +39,7 @@ class Twitch extends EventEmitter {
         TwitchApi.FetchStreamsByGame(gameId)
             .then(async (streams) => {
                 log.log(this.className, `Found ${streams.length} FF8 Stream(s).`);
+                console.log(streams);
                 let speedStreams = streams.filter(element => ('tags' in element));
                 speedStreams = speedStreams.filter(element => element.tags.some(r => targetTags.includes(r.toLowerCase())));
                 log.log(this.className, `Found ${speedStreams.length} FF8 Stream(s) with the speedrun tag.`);
