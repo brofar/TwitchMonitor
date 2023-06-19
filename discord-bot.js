@@ -301,9 +301,6 @@ class bot {
         // Status
         msgEmbed.addField("Status", `Live / ${streamer.viewer_count} viewers`, true);
 
-        // Language
-        msgEmbed.addField("Language", streamer.language, true);
-
         // Set main image (stream preview)
         let imageUrl = streamer.thumbnail_url;
         imageUrl = imageUrl.replace("{width}", "480");
