@@ -51,7 +51,7 @@ A server (this guide uses Ubuntu) where you have sudo.
 |---------|------------------------------------------------------------------------------------------------|---------------------------|
 | channel | Set the channel for the bot to post in.                                                        | `` `channel #live-now``   |
 | prefix  | Change the bot's command prefix.                                                               | `` `prefix !``            |
-| addbl   | Add a user to the blacklist. They won't be displayed even if they match the game/tag criteria. | `` `addbl @streamername`` |
+| addbl   | Add a user to the blacklist.<br />They won't be displayed even if they match the game/tag criteria. | `` `addbl @streamername`` |
 | delbl   | Remove a user from the blacklist.                                                              | `` `delbl @streamer``     |
 | listbl  | List users on the blacklist.                                                                   | `` `listbl``              |
 
