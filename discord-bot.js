@@ -239,7 +239,7 @@ class bot {
     let msgContent = this.CreateMessage(streamer);
 
 
-    channel.send({ content: "", embeds: [msgContent] })
+    channel.send({  embeds: [msgContent] })
       .then(async (message) => {
         await db.AddMessage(guildId, channelId, message.id, streamer.user_login);
         log.log(className, '[SendLiveMessage]', `Sent announcement to #${channel.name} on ${channel.guild.name} for ${streamer.user_name}.`);

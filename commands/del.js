@@ -38,7 +38,7 @@ class Del {
 
 
     let msgOptions = {
-      content: "",
+      
       embeds: [msgEmbed]
     };
 

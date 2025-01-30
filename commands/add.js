@@ -65,7 +65,7 @@ class Add {
     msgEmbed.addField(`Skipped (${result.skipped.length})`, result.skipped.length > 0 ? result.skipped.join('\n') : "None", true);
 
     let msgOptions = {
-      content: "",
+      
       embeds: [msgEmbed]
     };
 

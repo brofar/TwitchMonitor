@@ -52,7 +52,7 @@ class Channel {
     msgEmbed.addField(`${command}`, returnMessage, true);
 
     let msgOptions = {
-      content: "",
+      
       embeds: [msgEmbed]
     };
 

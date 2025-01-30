@@ -28,7 +28,7 @@ class List {
 
 
     let msgOptions = {
-      content: "",
+      
       embeds: [msgEmbed]
     };
 
