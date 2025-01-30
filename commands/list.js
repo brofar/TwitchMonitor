@@ -20,15 +20,14 @@ class List {
 
     watchedUsers.sort();
 
-    let msgEmbed = new Discord.MessageEmbed();
-
-    msgEmbed.setColor("#FD6A02");
-    msgEmbed.setTitle(`**Twitch Monitor**`);
-    msgEmbed.addField(`Watch List (${watchedUsers.length})`, watchedUsers.length > 0 ? watchedUsers.join('\n') : "None", true);
+    let msgEmbed = new Discord.MessageEmbed()
+      .setColor("#FD6A02")
+      .setTitle(`**Twitch Monitor**`)
+      .addFields({ name: `Watch List (${watchedUsers.length})`, value: watchedUsers.length > 0 ? watchedUsers.join('\n') : "None", inline: true });
 
 
     let msgOptions = {
-      
+      content: null,
       embeds: [msgEmbed]
     };
 

@@ -236,17 +236,18 @@ class bot {
   async SendLiveMessage(guildId, channelId, streamer) {
     let channel = await this.GetChannel(guildId, channelId);
     if (!channel) return;
-
-    console.log(`Sending message to ${channel.name} on ${channel.guild.name} for ${streamer.user_name}.`);
     let msgContent = this.CreateMessage(streamer);
-    if(!msgContent) return;
 
-
-    channel.send({  embeds: [msgContent] })
-      .then(async (message) => {
-        await db.AddMessage(guildId, channelId, message.id, streamer.user_login);
-        log.log(className, '[SendLiveMessage]', `Sent announcement to #${channel.name} on ${channel.guild.name} for ${streamer.user_name}.`);
-      })
+    try {
+      channel.send({ content: null, embeds: [msgContent] })
+        .then(async (message) => {
+          await db.AddMessage(guildId, channelId, message.id, streamer.user_login);
+          log.log(className, '[SendLiveMessage]', `Sent announcement to #${channel.name} on ${channel.guild.name} for ${streamer.user_name}.`);
+        })
+    } catch (e) {
+      log.warn(className, '[SendLiveMessage]', `Send error for ${streamer.user_name} in ${channel.guild.name}: ${e.message}.`);
+      log.error(className, e);
+    }
   }
 
   /**
@@ -284,26 +285,25 @@ class bot {
    *
    */
   CreateMessage(streamer) {
-    let msgEmbed = new Discord.MessageEmbed();
-    msgEmbed.setColor("#9146ff");
-    msgEmbed.setURL(`https://twitch.tv/${streamer.user_name.toLowerCase()}`);
-
     // Thumbnail
     let thumbUrl = streamer.profile_image_url;
 
-    msgEmbed.setThumbnail(thumbUrl);
-
-    msgEmbed.setTitle(`:red_circle: **${streamer.user_name} is live on Twitch!**`);
-    msgEmbed.addField("Title", streamer.title, false);
-
+    let msgEmbed = new Discord.MessageEmbed()
+      .setColor("#9146ff")
+      .setURL(`https://twitch.tv/${streamer.user_name.toLowerCase()}`)
+      .setThumbnail(thumbUrl)
+      .setTitle(`:red_circle: **${streamer.user_name} is live on Twitch!**`)
+      .addFields(
+        { name: "Title", value: streamer.title, inline: false }
+      );
 
     // Add game
     if (streamer.game_name) {
-      msgEmbed.addField("Game", streamer.game_name, false);
+      msgEmbed.addFields({ name: "Game", value: streamer.game_name, inline: false });
     }
 
     // Add status
-    msgEmbed.addField("Status", `Live with ${streamer.viewer_count} viewers`, true);
+    msgEmbed.addFields({ name: "Status", value: `Live with ${streamer.viewer_count} viewers`, inline: true })
 
     // Set main image (stream preview)
     let imageUrl = streamer.thumbnail_url;
@@ -317,12 +317,14 @@ class bot {
     let now = moment();
     let startedAt = moment(streamer.started_at);
 
-    msgEmbed.addField("Uptime", humanizeDuration(now - startedAt, {
-      delimiter: ", ",
-      largest: 2,
-      round: true,
-      units: ["y", "mo", "w", "d", "h", "m"]
-    }), true);
+    msgEmbed.addFields({
+      name: "Uptime", value: humanizeDuration(now - startedAt, {
+        delimiter: ", ",
+        largest: 2,
+        round: true,
+        units: ["y", "mo", "w", "d", "h", "m"]
+      }), inline: true
+    });
 
     return msgEmbed;
   }

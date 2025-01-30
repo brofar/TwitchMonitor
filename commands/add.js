@@ -57,15 +57,16 @@ class Add {
     result.added.sort();
     result.skipped.sort();
 
-    let msgEmbed = new Discord.MessageEmbed();
-
-    msgEmbed.setColor("#FD6A02");
-    msgEmbed.setTitle(`**Twitch Monitor**`);
-    msgEmbed.addField(`Added (${result.added.length})`, result.added.length > 0 ? result.added.join('\n') : "None", true);
-    msgEmbed.addField(`Skipped (${result.skipped.length})`, result.skipped.length > 0 ? result.skipped.join('\n') : "None", true);
+    let msgEmbed = new Discord.MessageEmbed()
+    .setColor("#FD6A02")
+    .setTitle(`**Twitch Monitor**`)
+    .addFields(
+      { name: `Added (${result.added.length})`, value: result.added.length > 0 ? result.added.join('\n') : "None", inline: true },
+      { name: `Skipped (${result.skipped.length})`, value: result.skipped.length > 0 ? result.skipped.join('\n') : "None", inline: true }
+    );
 
     let msgOptions = {
-      
+      content: null,
       embeds: [msgEmbed]
     };
 

@@ -45,14 +45,13 @@ class Channel {
       returnMessage = `Please mention a channel to set. (${prefix}${command} #channelname)`;
     }
 
-    let msgEmbed = new Discord.MessageEmbed();
-
-    msgEmbed.setColor("#FD6A02");
-    msgEmbed.setTitle(`**Twitch Monitor**`);
-    msgEmbed.addField(`${command}`, returnMessage, true);
+    let msgEmbed = new Discord.MessageEmbed()
+    .setColor("#FD6A02")
+    .setTitle(`**Twitch Monitor**`)
+    .addFields({name: `${command}`, value: returnMessage, inline: true});
 
     let msgOptions = {
-      
+      content: null,
       embeds: [msgEmbed]
     };
 

@@ -26,9 +26,9 @@ class Prefix {
     let msgEmbed = new Discord.MessageEmbed()
       .setColor("#FD6A02")
       .setTitle(`**Twitch Monitor**`)
-      .addField(`Prefix`, `Bot prefix set to ${newPrefix}`, true);
+      .addFields({ name: `Prefix`, value: `Bot prefix set to ${newPrefix}`, inline: true });
 
-    message.channel.send({ embeds: [msgEmbed]})
+    message.channel.send({ content: null, embeds: [msgEmbed] })
       .then((message) => {
         log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Set bot prefix to ${newPrefix}.`)
       })
