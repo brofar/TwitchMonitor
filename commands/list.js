@@ -1,45 +1,38 @@
 /* General */
-const Discord = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, EmbedBuilder } = require('discord.js');
 
 /* Local */
 const log = require('../log');
 const db = require('../db');
 
-class List {
-  
-  static category() {
-    return "Twitch";
-  }
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('list')
+    .setDescription('Lists all the streamers Twitch Monitor is tracking.'),
+  async execute(interaction) {
 
-  static helptext() {
-    return `Lists all streamers the bot is currently watching.`;
-  }
-
-  static async execute(message, args) {
-    let watchedUsers = await db.ListStreamers(message.guild.id)
+    let watchedUsers = await db.ListStreamers(interaction.guild.id)
 
     watchedUsers.sort();
 
-    let msgEmbed = new Discord.MessageEmbed();
+    let msgEmbed = new EmbedBuilder()
+      .setColor("#FD6A02")
+      .setTitle(`**Twitch Monitor**`)
+      .addFields({ name: `Watch List (${watchedUsers.length})`, value: watchedUsers.length > 0 ? watchedUsers.join('\n') : "None", inline: true });
 
-    msgEmbed.setColor("#FD6A02");
-    msgEmbed.setTitle(`**Twitch Monitor**`);
-    msgEmbed.addField(`Watch List (${watchedUsers.length})`, watchedUsers.length > 0 ? watchedUsers.join('\n') : "None", true);
-
-    let msgToSend = "";
 
     let msgOptions = {
-      embed: msgEmbed
+      content: null,
+      embeds: [msgEmbed],
+      flags: MessageFlags.Ephemeral
     };
 
-    message.channel.send(msgToSend, msgOptions)
-      .then((message) => {
-        log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${watchedUsers.length} users listed.`);
+    interaction.reply(msgOptions)
+      .then(() => {
+        log.log(`[LIST]`, `[${interaction.guild.name}]`, `${watchedUsers.length} users listed.`);
       })
       .catch((err) => {
-        log.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+        log.warn(`[LIST]`, `[${interaction.guild.name}]`, `Could not send msg to #${interaction.channel.name}`, err.message);
       });
-  }
-}
-
-module.exports = List;
+  },
+};
