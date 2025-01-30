@@ -11,59 +11,58 @@ const db = require('../db');
 */
 
 class Channel {
-    static category() {
-        return "Discord";
+  static category() {
+    return "Discord";
+  }
+
+  static helptext() {
+    return `Sets the channel to announce streams.`;
+  }
+
+  static async execute(message, args) {
+    if (!args[0]) return;
+    // Get the guild in which the message was sent
+    let _guild = await db.GetConfig(message.guild.id);
+    if (typeof _guild === 'undefined') return;
+
+    // Set up the return message
+    let returnMessage = "";
+    let prefix = _guild.prefix;
+    let command = this.name.toString().trim().toLowerCase();
+
+    // Grab the mentioned channel from the user's command
+    let channel = message.mentions.channels.first();
+
+    // Update the channel config
+    if (channel) {
+      if (channel.type === 'GUILD_TEXT') {
+        await db.UpdateGuild(_guild.guildid, 'channelid', channel.id);
+        returnMessage = `Channel set to ${channel.name}.`;
+      } else {
+        returnMessage = `Please make sure you choose a text channel for the bot.`;
+      }
+    } else {
+      returnMessage = `Please mention a channel to set. (${prefix}${command} #channelname)`;
     }
 
-    static helptext() {
-        return `Sets the channel to announce streams.`;
-    }
+    let msgEmbed = new Discord.MessageEmbed();
 
-    static async execute(message, args) {
-        if (!args[0]) return;
-        // Get the guild in which the message was sent
-        let _guild = await db.GetConfig(message.guild.id);
-        if (typeof _guild === 'undefined') return;
+    msgEmbed.setColor("#FD6A02");
+    msgEmbed.setTitle(`**Twitch Monitor**`);
+    msgEmbed.addField(`${command}`, returnMessage, true);
 
-        // Set up the return message
-        let returnMessage = "";
-        let prefix = _guild.prefix;
-        let command = this.name.toString().trim().toLowerCase();
+    let msgOptions = {
+      content: "",
+      embeds: [msgEmbed]
+    };
 
-        // Grab the mentioned channel from the user's command
-        let channel = message.mentions.channels.first();
-
-        // Update the channel config
-        if (channel) {
-            if (channel.type == 'text') {
-                await db.UpdateGuild(_guild.guildid, 'channelid', channel.id);
-                returnMessage = `Channel set to ${channel.name}.`;
-            } else {
-                returnMessage = `Please make sure you choose a text channel for the bot.`;
-            }
-        } else {
-            returnMessage = `Please mention a channel to set. (${prefix}${command} #channelname)`;
-        }
-
-        let msgEmbed = new Discord.MessageEmbed();
-
-        msgEmbed.setColor("#FD6A02");
-        msgEmbed.setTitle(`**Twitch Monitor**`);
-        msgEmbed.addField(`${command}`, returnMessage, true);
-
-        let msgToSend = "";
-
-        let msgOptions = {
-            embed: msgEmbed
-        };
-
-        message.channel.send(msgToSend, msgOptions)
-            .then((message) => {
-                log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${returnMessage}`)
-            })
-            .catch((err) => {
-                log.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
-            });
-    }
+    message.channel.send(msgOptions)
+      .then((message) => {
+        log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${returnMessage}`)
+      })
+      .catch((err) => {
+        log.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+      });
+  }
 }
 module.exports = Channel;

@@ -6,7 +6,7 @@ const log = require('../log');
 const db = require('../db');
 
 class List {
-  
+
   static category() {
     return "Twitch";
   }
@@ -26,13 +26,13 @@ class List {
     msgEmbed.setTitle(`**Twitch Monitor**`);
     msgEmbed.addField(`Watch List (${watchedUsers.length})`, watchedUsers.length > 0 ? watchedUsers.join('\n') : "None", true);
 
-    let msgToSend = "";
 
     let msgOptions = {
-      embed: msgEmbed
+      content: "",
+      embeds: [msgEmbed]
     };
 
-    message.channel.send(msgToSend, msgOptions)
+    message.channel.send(msgOptions)
       .then((message) => {
         log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${watchedUsers.length} users listed.`);
       })
