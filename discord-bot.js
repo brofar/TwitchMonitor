@@ -20,8 +20,6 @@ class bot {
       intents: [
         Discord.GatewayIntentBits.Guilds,
         Discord.GatewayIntentBits.GuildMessages,
-        Discord.GatewayIntentBits.MessageContent,
-        Discord.GatewayIntentBits.GuildMembers,
       ],
     });
     this.client.commands = new Discord.Collection();
