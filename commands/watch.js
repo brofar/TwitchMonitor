@@ -8,16 +8,21 @@ const db = require('../db');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('watch')
-    .setDescription(`Adds one or more streamers to the watch list (space separated).`),
+    .setDescription(`Adds one or more streamers to the watch list (space separated).`)
+    .addStringOption(option =>
+      option.setName('streamers')
+        .setDescription('Streamer usernames, space separated.')
+        .setRequired(true)),
   async execute(interaction) {
-    if (!args[0]) return;
-
     let result = { "added": [], "skipped": [] };
 
     let adds = [];
 
+    // Grab the streamer names from the user's command
+    let users = interaction.options.getString('streamers');
+
     // Loop through all users for users to add to the list
-    for (const user of args) {
+    for (const user of users.split(' ')) {
       let userToAdd = user.toString().trim().toLowerCase();
 
       // Remove the '@' symbol if it exists.
@@ -62,10 +67,10 @@ module.exports = {
 
     interaction.reply(msgOptions)
       .then(() => {
-        log.log(`[${this.name.toString().trim()}]`, `[${interaction.guild.name}]`, `${result.added.length} added. ${result.skipped.length} duplicates.`);
+        log.log(`[WATCH]`, `[${interaction.guild.name}]`, `${result.added.length} added. ${result.skipped.length} duplicates.`);
       })
       .catch((err) => {
-        log.warn(`[${this.name.toString().trim()}]`, `[${interaction.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+        log.warn(`[WATCH]`, `[${interaction.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
       });
   },
 };

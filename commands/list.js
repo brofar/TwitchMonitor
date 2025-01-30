@@ -29,10 +29,10 @@ module.exports = {
 
     interaction.reply(msgOptions)
       .then(() => {
-        log.log(`[${this.name.toString().trim()}]`, `[${interaction.guild.name}]`, `${watchedUsers.length} users listed.`);
+        log.log(`[LIST]`, `[${interaction.guild.name}]`, `${watchedUsers.length} users listed.`);
       })
       .catch((err) => {
-        log.warn(`[${this.name.toString().trim()}]`, `[${interaction.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+        log.warn(`[LIST]`, `[${interaction.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
       });
   },
 };

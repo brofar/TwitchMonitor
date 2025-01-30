@@ -1,5 +1,6 @@
 /* General */
 const Discord = require('discord.js');
+const path = require('node:path');
 const fs = require('node:fs');
 const moment = require('moment');
 const humanizeDuration = require("humanize-duration");
@@ -34,7 +35,7 @@ class bot {
       const filePath = path.join(commandsPath, file);
       const command = require(filePath);
       if ('data' in command && 'execute' in command) {
-        client.commands.set(command.data.name, command);
+        this.client.commands.set(command.data.name, command);
       } else {
         console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
       }

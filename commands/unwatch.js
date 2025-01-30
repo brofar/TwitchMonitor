@@ -8,26 +8,42 @@ const db = require('../db');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('unwatch')
-    .setDescription(`Removes one or more streamers from the watch list (space separated).`),
+    .setDescription(`Removes one or more streamers from the watch list (space separated).`)
+    .addStringOption(option =>
+      option.setName('streamers')
+        .setDescription('Streamer usernames, space separated.')
+        .setRequired(true)),
   async execute(interaction) {
-    if (!args[0]) return;
+    let removals = [];
 
-    let userToDelete = args[0].toString().trim().toLowerCase();
+    // Grab the streamer names from the user's command
+    let users = interaction.options.getString('streamers');
 
-    // Remove the '@' symbol if it exists.
-    if (userToDelete.charAt(0) === '@') {
-      userToDelete = userToDelete.substring(1);
+    // Loop through all users for users to add to the list
+    for (const user of users.split(' ')) {
+      let userToDelete = user.toString().trim().toLowerCase();
+
+      // Remove the '@' symbol if it exists.
+      if (userToDelete.charAt(0) === '@') {
+        userToDelete = userToDelete.substring(1);
+      }
+
+      // Whitespace or blank message
+      if (!userToDelete.length) continue;
+
+      await db.RemStreamer(interaction.guild.id, userToDelete);
+
+      removals.push(userToDelete);
     }
 
-    // Whitespace or blank message
-    if (!userToDelete.length) return;
-
-    await db.RemStreamer(message.guild.id, userToDelete);
+    removals.sort();
 
     let msgEmbed = new Discord.EmbedBuilder()
       .setColor("#FD6A02")
       .setTitle(`**Twitch Monitor**`)
-      .addFields({ name: `Removed`, value: userToDelete, inline: true });
+      .addFields(
+        { name: `Removed (${removals.length})`, value: removals.length > 0 ? removals.join('\n') : "None", inline: false },
+      );
 
     let msgOptions = {
       content: null,
@@ -37,10 +53,11 @@ module.exports = {
 
     interaction.reply(msgOptions)
       .then(() => {
-        log.log(`[${this.name.toString().trim()}]`, `[${interaction.guild.name}]`, `${userToDelete} deleted.`);
+        log.log(`[WATCH]`, `[${interaction.guild.name}]`, `${result.added.length} deleted. ${result.skipped.length} duplicates.`);
       })
       .catch((err) => {
-        log.warn(`[${this.name.toString().trim()}]`, `[${interaction.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+        log.warn(`[WATCH]`, `[${interaction.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
       });
+
   },
 };

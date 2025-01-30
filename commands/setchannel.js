@@ -1,6 +1,6 @@
 // TODO: Upon set channel, delete all other messages for this guild then do immediate refresh
 /* General */
-const { SlashCommandBuilder, MessageFlags, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, EmbedBuilder, ChannelType } = require('discord.js');
 
 /* Local */
 const log = require('../log');
@@ -9,20 +9,23 @@ const db = require('../db');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('setchannel')
-    .setDescription(`Sets the channel to announce streams.`),
+    .setDescription(`Sets the channel to announce streams.`)
+    .addChannelOption(option =>
+      option.setName('channel')
+        .setDescription('The channel to post in.')
+        .setRequired(true)
+        // Ensure the user can only select a TextChannel for output
+        .addChannelTypes(ChannelType.GuildText)),
   async execute(interaction) {
-    if (!args[0]) return;
     // Get the guild in which the message was sent
-    let _guild = await db.GetConfig(message.guild.id);
+    let _guild = await db.GetConfig(interaction.guild.id);
     if (typeof _guild === 'undefined') return;
 
     // Set up the return message
     let returnMessage = "";
-    let prefix = _guild.prefix;
-    let command = this.name.toString().trim().toLowerCase();
 
     // Grab the mentioned channel from the user's command
-    let channel = message.mentions.channels.first();
+    let channel = interaction.options.getChannel('channel');
 
     // Update the channel config
     if (channel) {
@@ -33,13 +36,13 @@ module.exports = {
         returnMessage = `Please make sure you choose a text channel for the bot.`;
       }
     } else {
-      returnMessage = `Please mention a channel to set. (${prefix}${command} #channelname)`;
+      returnMessage = `Please choose a channel.`;
     }
 
     let msgEmbed = new Discord.EmbedBuilder()
-    .setColor("#FD6A02")
-    .setTitle(`**Twitch Monitor**`)
-    .addFields({name: `${command}`, value: returnMessage, inline: true});
+      .setColor("#FD6A02")
+      .setTitle(`**Twitch Monitor**`)
+      .addFields({ name: `Set Channel`, value: returnMessage, inline: true });
 
     let msgOptions = {
       content: null,
@@ -49,10 +52,10 @@ module.exports = {
 
     interaction.reply(msgOptions)
       .then(() => {
-        log.log(`[${this.name.toString().trim()}]`, `[${interaction.guild.name}]`, `${returnMessage}`);
+        log.log(`[SETCHANNEL]`, `[${interaction.guild.name}]`, `${returnMessage}`);
       })
       .catch((err) => {
-        log.warn(`[${this.name.toString().trim()}]`, `[${interaction.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+        log.warn(`[SETCHANNEL]`, `[${interaction.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
       });
   },
 };
