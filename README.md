@@ -52,6 +52,7 @@ A server (this guide uses Ubuntu) where you have sudo.
 1. **Get a Discord Token**
 	1. Generate a Discord bot token by [following this guide](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token).
 	1. Copy the token into `DISCORD_BOT_TOKEN` in your `.env` file.
+  1. Copy your Discord application's Client ID to the `DISCORD_CLIENT_ID` in your `.env` file
 1. **Get a Twitch Token**
 	1. Create a Twitch app on the [Twitch Developer Console](https://dev.twitch.tv/console/apps) (When it asks, set the OAuth Redirect URL to `http://localhost`)
 	1. Copy the Twitch `Client ID` into the `TWITCH_CLIENT_ID` in your `.env` file.

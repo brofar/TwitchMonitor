@@ -1,6 +1,6 @@
 /* General */
 const Discord = require('discord.js');
-const fs = require('fs');
+const fs = require('node:fs');
 const moment = require('moment');
 const humanizeDuration = require("humanize-duration");
 
@@ -31,8 +31,12 @@ class bot {
     // grab all the command files from the command directory
     for (const file of commandFiles) {
       const command = require(`./commands/${file}`);
-      var cmdName = command.name.toString().trim().toLowerCase();
-      this.client.commands.set(cmdName, command);
+      // Set a new item in the Collection with the key as the command name and the value as the exported module
+      if ('data' in command && 'execute' in command) {
+        client.commands.set(command.data.name, command);
+      } else {
+        console.log(className, `[WARNING] The command at ${file} is missing a required "data" or "execute" property.`);
+      }
     }
 
     // alias for ease of use
@@ -70,47 +74,35 @@ class bot {
     });
 
     // Discord sees a message
-    client.on('messageCreate', async message => {
-      // Empty or bot message
-      if (!message.content || message.author.bot) return;
-
-      let txtPlain = message.content.toString().trim();
-      let txtLower = txtPlain.toLowerCase();
-
-      // Whitespace or blank message
-      if (!txtLower.length) return;
-
+    client.on(Discord.Events.InteractionCreate, async interaction => {
       // If the sender isn't an admin, ignore.
-      if (!message.member.permissions.has("MANAGE_CHANNELS") && !message.member.permissions.has("ADMINISTRATOR")) return;
+      if (!interaction.member.permissions.has("MANAGE_CHANNELS") && !interaction.member.permissions.has("ADMINISTRATOR")) return;
 
       // Get the guild in which the message was sent
-      let _guild = await db.GetConfig(message.guild.id);
+      let _guild = await db.GetConfig(interaction.guild.id);
       if (typeof _guild === 'undefined') return;
 
-      // Get ths guild's configured prefix
-      let prefix = _guild.prefix;
-
-      // Check if the message starts with the prefix
-      if (txtLower.charAt(0) !== prefix) return;
-
       // Split the message by space characters
-      const args = message.content.slice(prefix.length).trim().split(/ +/);
+      //const args = message.content.slice(prefix.length).trim().split(/ +/);
 
-      // The command will be the first word
-      const command = args.shift().toLowerCase();
+      const command = interaction.client.commands.get(interaction.commandName);
 
-      // If the command itself doesn't exist, ignore.
-      if (!client.commands.has(command)) return;
-
-      log.log(className, `[${message.guild.name}]`, `${command} command received from @${message.member.displayName}.`);
-
-      // Try executing the actual command
-      try {
-        client.commands.get(command).execute(message, args);
-      } catch (e) {
-        log.warn(className, 'Command execution problem:', e);
-        message.reply({ content: 'There was an error trying to execute that command!' });
+      if (!command) {
+        console.error(className, `No command matching ${interaction.commandName} was found.`);
+        return;
       }
+
+      try {
+        await command.execute(interaction);
+      } catch (error) {
+        console.error(error);
+        if (interaction.replied || interaction.deferred) {
+          await interaction.followUp({ content: 'There was an error while executing this command!', flags: Discord.MessageFlags.Ephemeral });
+        } else {
+          await interaction.reply({ content: 'There was an error while executing this command!', flags: Discord.MessageFlags.Ephemeral });
+        }
+      }
+
     });
 
     // Now that all the event handlers are declared, actually log in.
