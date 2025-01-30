@@ -8,7 +8,7 @@ const db = require('../db');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('watch')
-    .setDescription(`Adds one or more Twitch streamers to the watch list (if multiple, separate the usernames with spaces).`),
+    .setDescription(`Adds one or more streamers to the watch list (space separated).`),
   async execute(interaction) {
     if (!args[0]) return;
 

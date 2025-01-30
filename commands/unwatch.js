@@ -8,7 +8,7 @@ const db = require('../db');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('unwatch')
-    .setDescription(`Removes one or more Twitch streamers from the watch list (if multiple, separate the usernames with spaces).`),
+    .setDescription(`Removes one or more streamers from the watch list (space separated).`),
   async execute(interaction) {
     if (!args[0]) return;
 
