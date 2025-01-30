@@ -236,7 +236,10 @@ class bot {
   async SendLiveMessage(guildId, channelId, streamer) {
     let channel = await this.GetChannel(guildId, channelId);
     if (!channel) return;
+
+    console.log(`Sending message to ${channel.name} on ${channel.guild.name} for ${streamer.user_name}.`);
     let msgContent = this.CreateMessage(streamer);
+    if(!msgContent) return;
 
 
     channel.send({  embeds: [msgContent] })
