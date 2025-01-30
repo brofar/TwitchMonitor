@@ -16,7 +16,7 @@ class bot {
     // Initialize the DB.
     await db.Init();
 
-    this.client = new Discord.Client();
+    this.client = new Discord.Client({intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES]});
     this.client.commands = new Discord.Collection();
 
     // Find all the commands we have
@@ -238,16 +238,15 @@ class bot {
     if (!channel) return;
     let msgContent = this.CreateMessage(streamer);
 
-    try {
-      channel.send({ content: null, embeds: [msgContent] })
-        .then(async (message) => {
-          await db.AddMessage(guildId, channelId, message.id, streamer.user_login);
-          log.log(className, '[SendLiveMessage]', `Sent announcement to #${channel.name} on ${channel.guild.name} for ${streamer.user_name}.`);
-        })
-    } catch (e) {
-      log.warn(className, '[SendLiveMessage]', `Send error for ${streamer.user_name} in ${channel.guild.name}: ${e.message}.`);
-      log.error(className, e);
-    }
+    channel.send({ content: null, embeds: [msgContent] })
+      .then(async (message) => {
+        await db.AddMessage(guildId, channelId, message.id, streamer.user_login);
+        log.log(className, '[SendLiveMessage]', `Sent announcement to #${channel.name} on ${channel.guild.name} for ${streamer.user_name}.`);
+      })
+      .catch((e) => {
+        log.warn(className, '[SendLiveMessage]', `Send error for ${streamer.user_name} in ${channel.guild.name}: ${e.message}.`);
+        log.error(className, e);
+      });
   }
 
   /**
@@ -288,7 +287,7 @@ class bot {
     // Thumbnail
     let thumbUrl = streamer.profile_image_url;
 
-    let msgEmbed = new Discord.MessageEmbed()
+    let msgEmbed = new Discord.EmbedBuilder()
       .setColor("#9146ff")
       .setURL(`https://twitch.tv/${streamer.user_name.toLowerCase()}`)
       .setThumbnail(thumbUrl)

@@ -57,7 +57,7 @@ class Add {
     result.added.sort();
     result.skipped.sort();
 
-    let msgEmbed = new Discord.MessageEmbed()
+    let msgEmbed = new Discord.EmbedBuilder()
     .setColor("#FD6A02")
     .setTitle(`**Twitch Monitor**`)
     .addFields(

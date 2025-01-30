@@ -20,7 +20,7 @@ class List {
 
     watchedUsers.sort();
 
-    let msgEmbed = new Discord.MessageEmbed()
+    let msgEmbed = new Discord.EmbedBuilder()
       .setColor("#FD6A02")
       .setTitle(`**Twitch Monitor**`)
       .addFields({ name: `Watch List (${watchedUsers.length})`, value: watchedUsers.length > 0 ? watchedUsers.join('\n') : "None", inline: true });

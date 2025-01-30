@@ -30,7 +30,7 @@ class Del {
 
     await db.RemStreamer(message.guild.id, userToDelete);
 
-    let msgEmbed = new Discord.MessageEmbed()
+    let msgEmbed = new Discord.EmbedBuilder()
 
       .setColor("#FD6A02")
       .setTitle(`**Twitch Monitor**`)
