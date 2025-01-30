@@ -22,20 +22,21 @@ class bot {
         Discord.GatewayIntentBits.GuildMessages,
       ],
     });
+
     this.client.commands = new Discord.Collection();
 
-    // Find all the commands we have
-    const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-    log.log(className, `Discovered ${commandFiles.length} command file(s).`);
+    // Grab all the command folders from the commands directory
+    const commandsPath = path.join(__dirname, 'commands');
+    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
-    // grab all the command files from the command directory
+    // Set a new item in the Collection with the key as the command name and the value as the exported module
     for (const file of commandFiles) {
-      const command = require(`./commands/${file}`);
-      // Set a new item in the Collection with the key as the command name and the value as the exported module
+      const filePath = path.join(commandsPath, file);
+      const command = require(filePath);
       if ('data' in command && 'execute' in command) {
         client.commands.set(command.data.name, command);
       } else {
-        console.log(className, `[WARNING] The command at ${file} is missing a required "data" or "execute" property.`);
+        console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
       }
     }
 
@@ -49,13 +50,13 @@ class bot {
     });
 
     // Discord bot added to a server
-    client.on("guildCreate", async guild => {
+    client.on(Discord.Events.GuildCreate, async guild => {
       await db.NewGuild(guild.id);
       log.log(className, `[${guild.name}]`, `Bot joined a new server: ${guild.name}`);
     });
 
     // Discord bot removed from a server
-    client.on("guildDelete", async guild => {
+    client.on(Discord.Events.GuildDelete, async guild => {
       await db.KillGuild(guild.id);
       log.log(className, `Removed from a server: ${guild.name}`);
     });
