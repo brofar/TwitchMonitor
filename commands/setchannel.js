@@ -1,25 +1,16 @@
 // TODO: Upon set channel, delete all other messages for this guild then do immediate refresh
 /* General */
-const Discord = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, EmbedBuilder } = require('discord.js');
 
 /* Local */
 const log = require('../log');
 const db = require('../db');
 
-/* 
-* Sets the announcement channel for a guild
-*/
-
-class Channel {
-  static category() {
-    return "Discord";
-  }
-
-  static helptext() {
-    return `Sets the channel to announce streams.`;
-  }
-
-  static async execute(message, args) {
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('setchannel')
+    .setDescription(`Sets the channel to announce streams.`),
+  async execute(interaction) {
     if (!args[0]) return;
     // Get the guild in which the message was sent
     let _guild = await db.GetConfig(message.guild.id);
@@ -52,16 +43,16 @@ class Channel {
 
     let msgOptions = {
       content: null,
-      embeds: [msgEmbed]
+      embeds: [msgEmbed],
+      flags: MessageFlags.Ephemeral
     };
 
-    message.channel.send(msgOptions)
-      .then((message) => {
-        log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${returnMessage}`)
+    interaction.reply(msgOptions)
+      .then(() => {
+        log.log(`[${this.name.toString().trim()}]`, `[${interaction.guild.name}]`, `${returnMessage}`);
       })
       .catch((err) => {
-        log.warn(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+        log.warn(`[${this.name.toString().trim()}]`, `[${interaction.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
       });
-  }
-}
-module.exports = Channel;
+  },
+};
