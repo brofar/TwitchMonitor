@@ -121,7 +121,7 @@ class bot {
   UpdateWatchStatus(numStreams) {
     let activity = `${numStreams} stream${numStreams == 1 ? "" : "s"}`;
     this.client.user.setActivity(activity, {
-      "type": "WATCHING"
+      "type": Discord.ActivityType.Watching
     });
 
     log.log(className, '[UpdateWatchStatus]', `Updated current activity: Watching ${activity}.`);
