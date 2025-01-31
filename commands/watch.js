@@ -41,7 +41,7 @@ module.exports = {
 
       result.added.push(userToAdd);
       adds.push({
-        guildid: message.guild.id,
+        guildid: interaction.guild.id,
         streamer: userToAdd
       });
     }
@@ -70,7 +70,7 @@ module.exports = {
         log.log(`[WATCH]`, `[${interaction.guild.name}]`, `${result.added.length} added. ${result.skipped.length} duplicates.`);
       })
       .catch((err) => {
-        log.warn(`[WATCH]`, `[${interaction.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+        log.warn(`[WATCH]`, `[${interaction.guild.name}]`, `Could not send msg to #${interaction.channel.name}`, err.message);
       });
   },
 };

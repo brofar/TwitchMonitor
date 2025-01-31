@@ -32,7 +32,7 @@ module.exports = {
         log.log(`[LIST]`, `[${interaction.guild.name}]`, `${watchedUsers.length} users listed.`);
       })
       .catch((err) => {
-        log.warn(`[LIST]`, `[${interaction.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+        log.warn(`[LIST]`, `[${interaction.guild.name}]`, `Could not send msg to #${interaction.channel.name}`, err.message);
       });
   },
 };

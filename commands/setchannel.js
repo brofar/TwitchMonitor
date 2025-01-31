@@ -55,7 +55,7 @@ module.exports = {
         log.log(`[SETCHANNEL]`, `[${interaction.guild.name}]`, `${returnMessage}`);
       })
       .catch((err) => {
-        log.warn(`[SETCHANNEL]`, `[${interaction.guild.name}]`, `Could not send msg to #${message.channel.name}`, err.message);
+        log.warn(`[SETCHANNEL]`, `[${interaction.guild.name}]`, `Could not send msg to #${interaction.channel.name}`, err.message);
       });
   },
 };
