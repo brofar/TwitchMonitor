@@ -39,7 +39,7 @@ module.exports = {
       returnMessage = `Please choose a channel.`;
     }
 
-    let msgEmbed = new Discord.EmbedBuilder()
+    let msgEmbed = new EmbedBuilder()
       .setColor("#FD6A02")
       .setTitle(`**Twitch Monitor**`)
       .addFields({ name: `Set Channel`, value: returnMessage, inline: true });
