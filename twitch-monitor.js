@@ -29,7 +29,7 @@ class Twitch extends EventEmitter {
 
     async Refresh() {
         // Get channel list
-        let channels = await db.GetChannels();
+        let channels = await db.GetStreamers();
 
         // Don't waste resources if we're not watching any channels
         if (!channels.length || channels.length == 0) {

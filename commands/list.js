@@ -18,8 +18,11 @@ module.exports = {
     let msgEmbed = new EmbedBuilder()
       .setColor("#FD6A02")
       .setTitle(`**Twitch Monitor**`)
-      .addFields({ name: `Watch List (${watchedUsers.length})`, value: watchedUsers.length > 0 ? watchedUsers.join('\n') : "None", inline: true });
-
+      .addFields({
+        name: `Watch List (${watchedUsers.length})`,
+        value: watchedUsers.length > 0 ? watchedUsers.map(user => `${user.streamer} (<#${user.channelid}>)`).join('\n') : "None",
+        inline: true
+      });
 
     let msgOptions = {
       content: null,

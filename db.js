@@ -34,13 +34,12 @@ class db {
             );`
       const monitor = await sql`CREATE TABLE IF NOT EXISTS monitor (
                 guildid VARCHAR(60) NOT NULL,
+                channelid VARCHAR(60) NOT NULL,
                 streamer VARCHAR(60) NOT NULL,
-                PRIMARY KEY (guildId, streamer)
+                PRIMARY KEY (guildId, channelid, streamer)
             );`
       const config = await sql`CREATE TABLE IF NOT EXISTS config (
-                guildid VARCHAR(60) PRIMARY KEY,
-                prefix VARCHAR(1),
-                channelid VARCHAR(60)
+                guildid VARCHAR(60) PRIMARY KEY
             );`
     }
     return Promise.resolve();
@@ -49,7 +48,7 @@ class db {
   /**
    * Get distinct channel names from the database.
    */
-  static async GetChannels() {
+  static async GetStreamers() {
     const users = await sql`SELECT DISTINCT streamer FROM monitor`
 
     // Transform the result into an array of values
@@ -110,7 +109,7 @@ class db {
    */
   static async NewGuild(guildId) {
     try {
-      await sql`INSERT INTO config (guildId, prefix, channelId) VALUES (${guildId}, '\`', null)`;
+      await sql`INSERT INTO config (guildId) VALUES (${guildId})`;
     } catch (e) {
       log.warn(className, `Couldn't create a new guild config for ${guildId}.`);
       console.warn(e);
@@ -135,6 +134,7 @@ class db {
   /**
    * Updates a guild config property
    */
+  //! Can probably delete this with the implementation of slash commands.
   static async UpdateGuild(guildId, prop, value) {
     let obj = { [prop]: value };
     try {
@@ -149,9 +149,10 @@ class db {
   /**
    * Add a streamer to a guild
    */
+  //! Need to specify channel ID (/watch #channel streamer)
   static async AddStreamers(streamers) {
     try {
-      await sql`INSERT INTO monitor ${sql(streamers, 'guildid', 'streamer')} ON CONFLICT DO NOTHING`;
+      await sql`INSERT INTO monitor ${sql(streamers, 'guildid', 'channelid', 'streamer')} ON CONFLICT DO NOTHING`;
     } catch (e) {
       log.warn(className, `Couldn't add streamers.`);
       console.warn(e);
@@ -162,7 +163,8 @@ class db {
   /**
    * Remove a streamer from a guild
    */
-  static async RemStreamer(guildId, streamer) {
+  //! NEW: channelid param
+  static async RemStreamer(guildId, channelId, streamer) {
     try {
       await sql`DELETE FROM monitor WHERE streamer = ${streamer} AND guildid = ${guildId}`;
     } catch (e) {
@@ -176,12 +178,8 @@ class db {
    * List watched streamers from a guild.
    */
   static async ListStreamers(guildId) {
-    const users = await sql`SELECT streamer FROM monitor WHERE guildid = ${guildId}`
-
-    // Transform the result into an array of values
-    let result = users.map(a => a.streamer);
-
-    return Promise.resolve(result);
+    const users = await sql`SELECT streamer, channelid FROM monitor WHERE guildid = ${guildId}`
+    return Promise.resolve(users);
   }
 
   /**

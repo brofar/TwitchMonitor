@@ -1,5 +1,5 @@
 /* General */
-const { SlashCommandBuilder, MessageFlags, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, EmbedBuilder, ChannelType } = require('discord.js');
 
 /* Local */
 const log = require('../log');
@@ -9,6 +9,11 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('watch')
     .setDescription(`Adds one or more streamers to the watch list (space separated).`)
+    .addStringOption(option =>
+      option.addChannelOption('channel')
+        .setDescription('Which channel to post the streamer to.')
+        .setRequired(true)
+        .addChannelTypes(ChannelType.GuildText))
     .addStringOption(option =>
       option.setName('streamers')
         .setDescription('Streamer usernames, space separated.')
@@ -20,6 +25,7 @@ module.exports = {
 
     // Grab the streamer names from the user's command
     let users = interaction.options.getString('streamers');
+    let channel = interaction.options.getChannel('channel');
 
     // Loop through all users for users to add to the list
     for (const user of users.split(' ')) {
@@ -42,6 +48,7 @@ module.exports = {
       result.added.push(userToAdd);
       adds.push({
         guildid: interaction.guild.id,
+        channelid: channel,
         streamer: userToAdd
       });
     }
@@ -53,7 +60,7 @@ module.exports = {
 
     let msgEmbed = new EmbedBuilder()
       .setColor("#FD6A02")
-      .setTitle(`**Twitch Monitor**`)
+      .setTitle(`**Twitch Monitor - ${channel}**`)
       .addFields(
         { name: `Added (${result.added.length})`, value: result.added.length > 0 ? result.added.join('\n') : "None", inline: true },
         { name: `Skipped (${result.skipped.length})`, value: result.skipped.length > 0 ? result.skipped.join('\n') : "None", inline: true }
