@@ -27,6 +27,8 @@ module.exports = {
     // Grab the mentioned channel from the user's command
     let channel = interaction.options.getChannel('channel');
 
+    log.log(`[SETCHANNEL]`, `[${interaction.guild.name}]`, `Attempting to set announcement channel to #${channel.name}, which is a ${channel.type}.`);
+
     // Update the channel config
     if (channel) {
       if (channel.type === 'GUILD_TEXT') {
