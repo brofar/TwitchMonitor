@@ -240,7 +240,7 @@ class bot {
     channel.send({ content: null, embeds: [msgContent] })
       .then(async (message) => {
         await db.AddMessage(guildId, channelId, message.id, streamer.user_login);
-        log.log(className, '[SendLiveMessage]', `Sent announcement to #${channel.name} on ${channel.guild.name} for ${streamer.user_name}.`);
+        log.log(className, '[SendLiveMessage]', `[${streamer.user_name}]`, `Sent to #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Game ${streamer.game_name} | Title: ${streamer.title}`);
       })
       .catch((e) => {
         log.warn(className, '[SendLiveMessage]', `Send error for ${streamer.user_name} in ${channel.guild.name}: ${e.message}.`);
@@ -257,9 +257,9 @@ class bot {
     let msgContent = this.CreateMessage(streamer);
     channel.messages.fetch(messageId)
       .then((message) => {
-        message.edit('', { embed: msgContent })
+        message.edit({ content: null, embeds: [msgContent] })
           .then((message) => {
-            log.log(className, '[UpdateMessage]', `Updated announcement in #${channel.name} on ${channel.guild.name} for ${streamer.user_name}.`);
+            log.log(className, '[UpdateMessage]', `[${streamer.user_name}]`, `Updated #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Game ${streamer.game_name} | Title: ${streamer.title}`);
           })
           .catch((e) => {
             log.warn(className, '[UpdateMessage]', `Edit error for ${streamer.user_name} in ${channel.guild.name}: ${e.message}.`);
@@ -273,6 +273,9 @@ class bot {
           //this.SendLiveMessage(guildId, channelId, streamer);
           await db.DeleteMessage(guildId, messageId);
           return;
+        } else {
+          // Some other error, log it.
+          log.error(className, '[UpdateMessage]', `Error fetching/updating Discord message ${messageId} in ${channel.guild.name}: ${e.message}.`);
         }
       });
   }
