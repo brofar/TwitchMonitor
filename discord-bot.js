@@ -235,7 +235,7 @@ class bot {
     // If a role is specified, mention it in the message
     let messageText = null;
     if (roleid) {
-      messageText = `<@&${roleid}>`;
+      messageText = `<@&${roleid}> ${streamer.user_name} is live!`;
     }
 
     channel.send({ content: messageText, embeds: [msgContent] })
@@ -256,13 +256,13 @@ class bot {
     let channel = await this.GetChannel(guildId, channelId);
     if (!channel) return;
     let msgContent = this.CreateMessage(streamer);
-    
+
     // If a role is specified, mention it in the message
     let messageText = null;
     if (roleid) {
       messageText = `<@&${roleid}>`;
     }
-    
+
     channel.messages.fetch(messageId)
       .then((message) => {
         message.edit({ content: messageText, embeds: [msgContent] })
