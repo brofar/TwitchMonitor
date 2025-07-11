@@ -58,31 +58,15 @@ A server (this guide uses Ubuntu) where you have sudo.
 	1. Create a Twitch app on the [Twitch Developer Console](https://dev.twitch.tv/console/apps) (When it asks, set the OAuth Redirect URL to `http://localhost`)
 	1. Copy the Twitch `Client ID` into the `TWITCH_CLIENT_ID` in your `.env` file.
 	1. Copy the Twitch `Client Secret` into the `TWITCH_CLIENT_SECRET` in your `.env` file.
+1. **Deploy the Slash Commands**
+  1. `cd` into the bot's directory
+  1. `npm run deploy`
 1. **Start the Bot**
-	1. `cd` into the bot's directory
 	1. `pm2 start app.js --name twitch-monitor`
 1. **Invite the Bot to your Discord Server**
 	1. Go to `https://discord.com/api/oauth2/authorize?client_id=[BOT_CLIENT_ID]&permissions=8&scope=bot`
 		* Swap `[BOT_CLIENT_ID]` in the URL above for your [Discord app's client id](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token).
 		* If you want to lock down the announcement channel so nobody but the bot can post, ensure that the bot has 	permissions at minimum to Send Messages, Manage Messages, and Embed Links.
-	1. Start by issuing the  `` `channel`` command (`` `channel #live-now``) to tell the bot where to post its messages.
-	1. Add streamers by issuing `` `add streamer1 streamer2 etc etc``
-	1. Remove streamers by issuing `` `del streamer1 streamer2 etc etc``
-	1. List followed streamers by issuing `` `list``
-	1. Change the bot's command prefix using `` `prefix !`` (this would change the prefix from `` ` `` to `!`)
-
-## Commands
-Assuming the default command prefix.
-
-### `channel
-*Sets the channel where the bot will announce streams.*
-
-Usage: `` `channel #live-now``
-
-### `prefix
-*Changes the bot's command prefix.*
-
-Usage: `` `prefix !``
 
 ## Commands
 
