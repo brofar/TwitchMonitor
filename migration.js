@@ -6,7 +6,7 @@ const postgres = require('postgres');
 const log = require('./log');
 
 const sql = postgres(process.env.DATABASE_URL, {
-  ssl: { rejectUnauthorized: false },
+  ssl: false,
 });
 
 const className = '[migration]';
