@@ -14,18 +14,15 @@ module.exports = {
       option.setName('channel')
         .setDescription('The channel in which to post the live notifications.')
         .setRequired(true)
-        .addChannelTypes(ChannelType.GuildText)
-        .setDMPermission(false))
-    .addRoleOption(option =>
-      option.setName('role')
-        .setDescription('[OPTIONAL] Which role to ping with the live notifications.')
-        .setRequired(false)
-        .setDMPermission(false))
+        .addChannelTypes(ChannelType.GuildText))
     .addStringOption(option =>
       option.setName('streamers')
         .setDescription('Streamer usernames, space separated.')
-        .setRequired(true)
-        .setDMPermission(false)),
+        .setRequired(true))
+    .addRoleOption(option =>
+      option.setName('role')
+        .setDescription('[OPTIONAL] Which role to ping with the live notifications.')
+        .setRequired(false)),
 
   async execute(interaction) {
     let result = { "added": [], "skipped": [], "duplicates": [] };
