@@ -53,10 +53,10 @@ module.exports = {
 
     interaction.reply(msgOptions)
       .then(() => {
-        log.log(`[WATCH]`, `[${interaction.guild.name}]`, `${result.added.length} deleted. ${result.skipped.length} duplicates.`);
+        log.log(`[UNWATCH]`, `[${interaction.guild.name}]`, `${removals.length} streamers removed.`);
       })
       .catch((err) => {
-        log.warn(`[WATCH]`, `[${interaction.guild.name}]`, `Could not send msg to #${interaction.channel.name}`, err.message);
+        log.warn(`[UNWATCH]`, `[${interaction.guild.name}]`, `Could not send msg to #${interaction.channel.name}`, err.message);
       });
 
   },

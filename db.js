@@ -4,6 +4,7 @@ const postgres = require('postgres');
 
 /* Local */
 const log = require('./log');
+const Migration = require('./migration');
 
 const sql = postgres(process.env.DATABASE_URL, {
   ssl: { rejectUnauthorized: false },
@@ -16,6 +17,23 @@ class db {
    * Set up the DB for the first time.
    */
   static async Init() {
+    // Check if we need to migrate from old database structure
+    const needsMigration = await Migration.needsMigration();
+    
+    if (needsMigration) {
+      log.log(className, `Running database migration...`);
+      const migrationSuccessful = await Migration.migrate();
+      
+      if (!migrationSuccessful) {
+        log.error(className, `Database migration failed. Please check the logs and try again.`);
+        process.exit(1);
+      }
+      
+      // Clean up backup tables after successful migration
+      await Migration.cleanupBackups();
+      log.log(className, `Database migration completed successfully.`);
+    }
+
     // Check if DB tables exist.
     log.log(className, `Checking for tables.`);
     const tableExists = await sql`SELECT to_regclass('public.livemessages');`
@@ -34,13 +52,10 @@ class db {
             );`
       const monitor = await sql`CREATE TABLE IF NOT EXISTS monitor (
                 guildid VARCHAR(60) NOT NULL,
+                channelid VARCHAR(60) NOT NULL,
+                roleid VARCHAR(60) NOT NULL,
                 streamer VARCHAR(60) NOT NULL,
-                PRIMARY KEY (guildId, streamer)
-            );`
-      const config = await sql`CREATE TABLE IF NOT EXISTS config (
-                guildid VARCHAR(60) PRIMARY KEY,
-                prefix VARCHAR(1),
-                channelid VARCHAR(60)
+                PRIMARY KEY (guildId, channelId, streamer)
             );`
     }
     return Promise.resolve();
@@ -90,40 +105,10 @@ class db {
   }
 
   /**
-  * Get all configs for all guilds
-  */
-  static async GetAllConfigs() {
-    const result = await sql`SELECT * FROM config`
-    return Promise.resolve(result);
-  }
-
-  /**
-   * Get config values for a guild
-   */
-  static async GetConfig(guildId) {
-    const result = await sql`SELECT * FROM config WHERE guildid = ${guildId} LIMIT 1`
-    return Promise.resolve(result[0]);
-  }
-
-  /**
-   * Creates a config for a new guild
-   */
-  static async NewGuild(guildId) {
-    try {
-      await sql`INSERT INTO config (guildId, prefix, channelId) VALUES (${guildId}, '\`', null)`;
-    } catch (e) {
-      log.warn(className, `Couldn't create a new guild config for ${guildId}.`);
-      console.warn(e);
-    }
-    return Promise.resolve();
-  }
-
-  /**
    * Removes a config for a guild
    */
   static async KillGuild(guildId) {
     try {
-      await sql`DELETE FROM config WHERE guildId = ${guildId}`;
       await sql`DELETE FROM monitor WHERE guildId = ${guildId}`;
       await sql`DELETE FROM livemessages WHERE guildId = ${guildId}`;
     } catch (e) {
@@ -133,30 +118,32 @@ class db {
   }
 
   /**
-   * Updates a guild config property
-   */
-  static async UpdateGuild(guildId, prop, value) {
-    let obj = { [prop]: value };
-    try {
-      await sql`UPDATE config SET ${sql(obj, prop)} WHERE guildid = ${guildId}`;
-    } catch (e) {
-      log.warn(className, `Couldn't update '${prop}' = '${value}' WHERE guildid = '${guildId}'.`);
-      console.log(e);
-    }
-    return Promise.resolve();
-  }
-
-  /**
    * Add a streamer to a guild
    */
   static async AddStreamers(streamers) {
+    let results = { added: [], skipped: [] };
+    
     try {
-      await sql`INSERT INTO monitor ${sql(streamers, 'guildid', 'streamer')} ON CONFLICT DO NOTHING`;
+      // Check for existing entries first
+      for (const streamer of streamers) {
+        const existing = await sql`SELECT * FROM monitor WHERE guildid = ${streamer.guildid} AND channelid = ${streamer.channelid} AND streamer = ${streamer.streamer}`;
+        if (existing.length > 0) {
+          results.skipped.push(streamer.streamer);
+        } else {
+          results.added.push(streamer.streamer);
+        }
+      }
+      
+      // Only insert the new ones
+      if (results.added.length > 0) {
+        const toInsert = streamers.filter(s => results.added.includes(s.streamer));
+        await sql`INSERT INTO monitor ${sql(toInsert, 'guildid', 'channelid', 'roleid', 'streamer')}`;
+      }
     } catch (e) {
       log.warn(className, `Couldn't add streamers.`);
       console.warn(e);
     }
-    return Promise.resolve();
+    return Promise.resolve(results);
   }
 
   /**
@@ -176,21 +163,9 @@ class db {
    * List watched streamers from a guild.
    */
   static async ListStreamers(guildId) {
-    const users = await sql`SELECT streamer FROM monitor WHERE guildid = ${guildId}`
+    const streamers = await sql`SELECT streamer, channelid, roleid FROM monitor WHERE guildid = ${guildId}`
 
-    // Transform the result into an array of values
-    let result = users.map(a => a.streamer);
-
-    return Promise.resolve(result);
-  }
-
-  /**
-   * List watched streamers from a guild.
-   * Returns an array of objects.
-   */
-  static async GetGuildDebugInfo(guildId) {
-    const result = await sql`SELECT * FROM config WHERE guildid = ${guildId} LIMIT 1`
-    return Promise.resolve(result);
+    return Promise.resolve(streamers);
   }
 }
 
