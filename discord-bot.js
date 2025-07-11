@@ -52,7 +52,6 @@ class bot {
 
     // Discord bot added to a server
     client.on(Discord.Events.GuildCreate, async guild => {
-      await db.NewGuild(guild.id);
       log.log(className, `[${guild.name}]`, `Bot joined a new server: ${guild.name}`);
     });
 
@@ -79,13 +78,7 @@ class bot {
     client.on(Discord.Events.InteractionCreate, async interaction => {
       // If the sender isn't an admin, ignore.
       if (!interaction.member.permissions.has("MANAGE_CHANNELS") && !interaction.member.permissions.has("ADMINISTRATOR")) return;
-
-      // Get the guild in which the message was sent
-      let _guild = await db.GetConfig(interaction.guild.id);
-      if (typeof _guild === 'undefined') return;
-
-      // Split the message by space characters
-      //const args = message.content.slice(prefix.length).trim().split(/ +/);
+      if (typeof interaction.guild.id === 'undefined') return;
 
       const command = interaction.client.commands.get(interaction.commandName);
 
@@ -134,9 +127,6 @@ class bot {
    *
    */
   async ProcessStreams(streams) {
-    // Grab all configs
-    let configs = await db.GetAllConfigs();
-
     // Grab all live messages from db
     let messages = await db.GetMessages();
 
@@ -144,6 +134,7 @@ class bot {
     let streamerNames = streams.map(a => a.user_login);
     let monitorList = (streamerNames.length > 0) ? await db.GetGuildsPerStreamer(streamerNames) : [];
 
+    //***** 1. Cleanup Stage *****/
     // Streamers in discord messages but no longer live (messages to be deleted)
     let offlineStreamers = messages.filter(element => !streamerNames.includes(element.streamer));
 
@@ -153,23 +144,27 @@ class bot {
     let messagesToDelete = [...offlineStreamers, ...deletedStreamers];
     this.DeleteMessages(messagesToDelete);
 
-    // Process non-deleted stuff now.
+    //***** 2. Announcing Stage *****/
     for (const stream of streams) {
       const streamerFilter = (element) => element.streamer == stream.user_login;
 
-      // List of guild ids watching this streamer
-      let guilds = monitorList.filter(streamerFilter).map(a => a.guildid);
+      // List of {guildid, channelid} watching this streamer
+      let guildChannels = monitorList.filter(streamerFilter);
 
-      for (const guild of guilds) {
-        let message = messages.findIndex(element => element.streamer == stream.user_login && element.guildid == guild);
-        if (message !== -1) {
+      for (const { guildid, channelid, roleid } of guildChannels) {
+        let messageIdx = messages.findIndex(
+          element =>
+            element.streamer == stream.user_login &&
+            element.guildid == guildid &&
+            element.channelid == channelid
+        );
+        if (messageIdx !== -1) {
           // Update existing message
-          let theMessage = messages[message];
-          this.UpdateMessage(guild, theMessage.channelid, theMessage.messageid, stream);
+          let theMessage = messages[messageIdx];
+          this.UpdateMessage(guildid, channelid, theMessage.messageid, roleid, stream);
         } else {
           // Create a new message
-          let channelId = configs.find(el => el.guildid == guild).channelid;
-          this.SendLiveMessage(guild, channelId, stream);
+          this.SendLiveMessage(guildid, channelid, roleid, stream);
         }
       }
     }
@@ -232,12 +227,18 @@ class bot {
   /**
    * Create a discord message
    */
-  async SendLiveMessage(guildId, channelId, streamer) {
+  async SendLiveMessage(guildId, channelId, roleid, streamer) {
     let channel = await this.GetChannel(guildId, channelId);
     if (!channel) return;
     let msgContent = this.CreateMessage(streamer);
 
-    channel.send({ content: null, embeds: [msgContent] })
+    // If a role is specified, mention it in the message
+    let messageText = null;
+    if (roleid) {
+      messageText = `<@&${roleid}>`;
+    }
+
+    channel.send({ content: messageText, embeds: [msgContent] })
       .then(async (message) => {
         await db.AddMessage(guildId, channelId, message.id, streamer.user_login);
         log.log(className, '[SendLiveMessage]', `[${streamer.user_name}]`, `Sent to #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Game ${streamer.game_name} | Title: ${streamer.title}`);
@@ -251,13 +252,20 @@ class bot {
   /**
    * Edit a discord message
    */
-  async UpdateMessage(guildId, channelId, messageId, streamer) {
+  async UpdateMessage(guildId, channelId, messageId, roleid, streamer) {
     let channel = await this.GetChannel(guildId, channelId);
     if (!channel) return;
     let msgContent = this.CreateMessage(streamer);
+    
+    // If a role is specified, mention it in the message
+    let messageText = null;
+    if (roleid) {
+      messageText = `<@&${roleid}>`;
+    }
+    
     channel.messages.fetch(messageId)
       .then((message) => {
-        message.edit({ content: null, embeds: [msgContent] })
+        message.edit({ content: messageText, embeds: [msgContent] })
           .then((message) => {
             log.log(className, '[UpdateMessage]', `[${streamer.user_name}]`, `Updated #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Game ${streamer.game_name} | Title: ${streamer.title}`);
           })

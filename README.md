@@ -13,11 +13,12 @@ Multiple streamers can be added to the watch list, at your (or any server admin'
 
 ## Features
 * Maintains a real-time list of live streamers.
-* No annoying @everyone mentions.
+* Per-channel configuration: Each streamer can be configured for specific channels.
+* Per-role mentions: Each streamer can have specific roles mentioned when they go live.
 * Monitors Twitch streamers and posts on discord when they're live.
 * Continously updates streamer card in the channel with uptime/game changes + screenshot.
 * Deletes streamer card from channel when streamer goes offline.
-* Discord commands to add/remove/list watched streamers (\`add / \`del / \`list).
+* Discord slash commands to add/remove/list/reset watched streamers (`/watch`, `/unwatch`, `/list`, `/reset`).
 
 ## Installation
 This is written for beginners, but it is expected that you at least know how to use basic unix shell commands.
@@ -83,19 +84,110 @@ Usage: `` `channel #live-now``
 
 Usage: `` `prefix !``
 
-### `add
-*Adds a Twitch streamer to the watch list. You can specify multiple space-separated Twitch handles for quick addition.*
+## Commands
 
-Usage: `` `add user1 user2 user3``
+### `/watch`
+*Adds one or more Twitch streamers to the watch list for a specific channel with optional role mentions.*
 
-### `del
-*Removes a Twitch streamer from the watch list. You can specify multiple space-separated Twitch handles for quick removal.*
+**Parameters:**
+- `channel`: The Discord channel where live notifications will be posted (required)
+- `role`: The role to mention when the streamer goes live (optional)
+- `streamers`: Space-separated list of Twitch usernames to watch (required)
 
-Usage: `` `del user1 user2 user3``
+**Usage:** `/watch channel:#streams role:@gamers streamers:shroud ninja lirik`
 
-### `list
-*Lists all streamers the bot is currently watching.*
+**Features:**
+- Validates that the selected channel is in the same server
+- Checks bot permissions for the channel and role
+- Provides detailed feedback on added/skipped/duplicate streamers
+- Allows the same streamer to be watched in multiple channels with different roles
 
-Usage: `` `list``
+### `/unwatch`
+*Removes one or more Twitch streamers from the watch list.*
+
+**Parameters:**
+- `streamers`: Space-separated list of Twitch usernames to stop watching (required)
+
+**Usage:** `/unwatch streamers:shroud ninja`
+
+**Note:** This removes the streamer from ALL channels in the current server.
+
+### `/list`
+*Lists all streamers the bot is currently watching in the server, organized by streamer with their configured channels and roles.*
+
+**Usage:** `/list`
+
+**Output:** Shows streamers grouped with their respective channels and role mentions.
+
+### `/reset`
+*Removes ALL streamers and configurations from the current server. This is useful for completely resetting the bot's configuration.*
+
+**Parameters:**
+- `confirm`: Must be set to `True` to confirm the action (required)
+
+**Usage:** `/reset confirm:True`
+
+**⚠️ Warning:** This action cannot be undone! It will remove:
+- All streamer watches from all channels
+- All channel configurations  
+- All role mention settings
+
+Use this command carefully - it's intended for completely resetting the bot's configuration in your server.
+
+## Database Migration
+
+If you're upgrading from an older version of Twitch Monitor that used the old database structure (with a single channel per guild), you'll need to migrate your database to the new structure that supports per-channel and per-role configuration.
+
+### Automatic Migration
+The bot will automatically detect if you're using the old database structure and perform the migration when you start it. The migration process:
+
+1. **Detects** the old database structure
+2. **Creates backup tables** to preserve your data
+3. **Migrates** your existing streamer configurations to use the channel specified in your old config
+4. **Updates** the database schema to the new structure
+5. **Cleans up** old tables and backups
+
+### Manual Migration
+If you prefer to run the migration manually, you can use the migration script:
+
+```bash
+npm run migrate
+```
+
+Or run it directly:
+
+```bash
+node migrate-db.js
+```
+
+### What Gets Migrated
+- **Streamer configurations**: All streamers you were watching will continue to be watched
+- **Channel assignments**: Streamers will be assigned to the channel that was configured in your old setup
+- **Guild settings**: All guild-specific settings are preserved
+- **Role assignments**: Initially set to null (no role mentions), you can configure these using the new `/watch` command
+
+### Post-Migration
+After migration, you can:
+- Use the new `/watch` command to add streamers to specific channels with optional role mentions
+- Use `/unwatch` to remove streamers
+- Use `/list` to see all configured streamers with their channels and roles
+
+The old commands are no longer supported in the new version.
+
+## Command Deployment
+
+After setting up the bot, you need to deploy the slash commands to Discord:
+
+```bash
+npm run deploy
+```
+
+Or run it directly:
+
+```bash
+node deploy-commands.js
+```
+
+This only needs to be done once when you first set up the bot, or when you update command definitions. The bot will automatically load all commands from the `commands/` directory.
 
 

@@ -10,6 +10,8 @@
     "postgres": "^3.3.2"
   },
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "migrate": "node migrate-db.js",
+    "deploy": "node deploy-commands.js"
   }
 }
