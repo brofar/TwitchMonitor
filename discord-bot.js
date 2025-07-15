@@ -178,8 +178,33 @@ class bot {
    */
   async DeleteMessages(messages) {
     for (const message of messages) {
-      this.DeleteMessage(message.guildid, message.channelid, message.messageid);
-      await db.DeleteMessage(message.guildid, message.messageid);
+      // Remove from Discord
+      let discordDeleteSuccess = false;
+      try {
+        await this.DeleteMessage(message.guildid, message.channelid, message.messageid);
+        discordDeleteSuccess = true;
+      } catch (err) {
+        log.error(className, `[DeleteMessages] Error deleting Discord message:`, err);
+        
+        // Remove from DB if error is unrecoverable
+        const unrecoverableErrors = [
+          "Unknown Message", // message deleted
+          "Missing Access",  // bot removed from server or channel
+          "Missing Permissions"
+        ];
+        if (err && err.message && unrecoverableErrors.some(e => err.message.includes(e))) {
+          discordDeleteSuccess = true;
+        }
+      }
+
+      // Remove from DB only if discord delete succeeded or error is unrecoverable
+      if (discordDeleteSuccess) {
+        try {
+          await db.DeleteMessage(message.guildid, message.messageid);
+        } catch (err) {
+          log.error(className, `[DeleteMessages] Error deleting message from DB:`, err);
+        }
+      }
     }
   }
 
