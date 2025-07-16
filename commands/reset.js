@@ -45,7 +45,8 @@ module.exports = {
         .setDescription(`🗑️ Successfully removed **${streamerCount}** streamer configuration(s) from this server.`)
         .addFields(
           { name: "What was reset:", value: "• All streamer watches\n• All channel configurations\n• All role mentions", inline: false },
-          { name: "Next steps:", value: "Use `/watch` to add streamers back to specific channels with optional role mentions.", inline: false }
+          { name: "Next steps:", value: "Use `/watch` to add streamers back to specific channels with optional role mentions.", inline: false },
+          { name: "Note:", value: "It may take up to 90 seconds for the bot to remove any active streamer cards.", inline: false }
         )
         .setFooter({ text: "This action cannot be undone." });
 

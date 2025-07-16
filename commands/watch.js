@@ -14,7 +14,8 @@ module.exports = {
       option.setName('channel')
         .setDescription('The channel in which to post the live notifications.')
         .setRequired(true)
-        .addChannelTypes(ChannelType.GuildText))
+        .addChannelTypes(ChannelType.GuildText)
+        .addChannelTypes(ChannelType.GuildAnnouncement))
     .addStringOption(option =>
       option.setName('streamers')
         .setDescription('Streamer usernames, space separated.')

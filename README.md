@@ -1,27 +1,24 @@
 # Twitch Monitor
-🤖 **A simple Discord bot that maintains a list of live Twitch streams in a Discord channel.**
-
-This readme was originally written for use with the Heroku free tier, however as Heroku has gotten rid of it, it's been repurposed for any generic server (I use Ubuntu).
+🤖 **A simple bot that maintains a list of live Twitch streams in a Discord channel.**
 
 Many bots simply post to a Discord channel when a streamer has gone live, the post gives you no indication as to whether the streamer is *still* live or what their status is, leading to the information in the channel becoming stale quickly.
 
-This bot creates a card in the channel which updates throughout the duration of the streamer's stream, with uptime, viewcount, and a screenshot of their stream.
+This bot creates a card in the channel which updates every minute throughout the duration of the stream, with uptime, viewcount, and a screenshot of their stream.
 
-Once the streamer goes offline, the bot deletes the card, ensuring that the posts in your discord channel are all up-to-date and only referring to streamers who are live right now.
+Once the streamer goes offline, the bot deletes the card, ensuring that the posts in the discord channel are all up-to-date and only referring to streamers who are actually live.
 
-Multiple streamers can be added to the watch list, at your (or any server admin's) discretion.
+Multiple streamers can be added to the watch list, and each one can be assigned to different (or the same) channel at your discretion.
 
 ## Features
-* Maintains a real-time list of live streamers.
-* Per-channel configuration: Each streamer can be configured for specific channels.
-* Per-role mentions: Each streamer can have specific roles mentioned when they go live.
 * Monitors Twitch streamers and posts on discord when they're live.
+* Per-channel configuration: Each streamer can be configured for specific channels. Multiple streamers can be configured for the same channel as well.
+* Per-role mentions: Each streamer can optionally have specific roles mentioned when they go live.
 * Continously updates streamer card in the channel with uptime/game changes + screenshot.
-* Deletes streamer card from channel when streamer goes offline.
-* Discord slash commands to add/remove/list/reset watched streamers (`/watch`, `/unwatch`, `/list`, `/reset`).
+* Deletes its own message from channel when streamer goes offline.
+* Uses Discord slash commands to add/remove/list/reset watched streamers (`/watch`, `/unwatch`, `/list`, `/reset`).
 
 ## Installation
-This is written for beginners, but it is expected that you at least know how to use basic unix shell commands.
+These instructions are written for unix (I use Ubuntu to host mine), but I'm sure you could run it on other operating systems as well, it's just Node after all. Anyway, these are written for beginner-ish users but it is expected that you at least know how to use unix shell commands.
 
 **Requirements**
 
@@ -29,7 +26,7 @@ A server (this guide uses Ubuntu) where you have sudo.
 
 **Instructions**
 1. **Install Node**
-	1. Here's a [decent guide](https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-20-04) on how to install node. I recommend using NVM (Option 3). This bot was built in node v18 so any LTS in v18 should be fine.
+	1. Here's a [decent guide](https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-20-04) on how to install node. I recommend using NVM (Option 3).
 1. **Install a Node Process Manager**
 	1. I use PM2 `npm install pm2@latest -g`
 1. **Install PostgreSQL**
@@ -64,9 +61,9 @@ A server (this guide uses Ubuntu) where you have sudo.
 1. **Start the Bot**
 	1. `pm2 start app.js --name twitch-monitor`
 1. **Invite the Bot to your Discord Server**
-	1. Go to `https://discord.com/api/oauth2/authorize?client_id=[BOT_CLIENT_ID]&permissions=8&scope=bot`
+	1. Go to `https://discord.com/api/oauth2/authorize?client_id=[BOT_CLIENT_ID]&permissions=223232&scope=bot`
 		* Swap `[BOT_CLIENT_ID]` in the URL above for your [Discord app's client id](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token).
-		* If you want to lock down the announcement channel so nobody but the bot can post, ensure that the bot has 	permissions at minimum to Send Messages, Manage Messages, and Embed Links.
+		* If you want to lock down the announcement channel so nobody but the bot can post, ensure that the bot has 	permissions at minimum to Send Messages, Manage Messages, and Embed Links in that channel.
 
 ## Commands
 
@@ -79,12 +76,6 @@ A server (this guide uses Ubuntu) where you have sudo.
 - `streamers`: Space-separated list of Twitch usernames to watch (required)
 
 **Usage:** `/watch channel:#streams role:@gamers streamers:shroud ninja lirik`
-
-**Features:**
-- Validates that the selected channel is in the same server
-- Checks bot permissions for the channel and role
-- Provides detailed feedback on added/skipped/duplicate streamers
-- Allows the same streamer to be watched in multiple channels with different roles
 
 ### `/unwatch`
 *Removes one or more Twitch streamers from the watch list.*
@@ -117,46 +108,6 @@ A server (this guide uses Ubuntu) where you have sudo.
 - All role mention settings
 
 Use this command carefully - it's intended for completely resetting the bot's configuration in your server.
-
-## Database Migration
-
-If you're upgrading from an older version of Twitch Monitor that used the old database structure (with a single channel per guild), you'll need to migrate your database to the new structure that supports per-channel and per-role configuration.
-
-### Automatic Migration
-The bot will automatically detect if you're using the old database structure and perform the migration when you start it. The migration process:
-
-1. **Detects** the old database structure
-2. **Creates backup tables** to preserve your data
-3. **Migrates** your existing streamer configurations to use the channel specified in your old config
-4. **Updates** the database schema to the new structure
-5. **Cleans up** old tables and backups
-
-### Manual Migration
-If you prefer to run the migration manually, you can use the migration script:
-
-```bash
-npm run migrate
-```
-
-Or run it directly:
-
-```bash
-node migrate-db.js
-```
-
-### What Gets Migrated
-- **Streamer configurations**: All streamers you were watching will continue to be watched
-- **Channel assignments**: Streamers will be assigned to the channel that was configured in your old setup
-- **Guild settings**: All guild-specific settings are preserved
-- **Role assignments**: Initially set to null (no role mentions), you can configure these using the new `/watch` command
-
-### Post-Migration
-After migration, you can:
-- Use the new `/watch` command to add streamers to specific channels with optional role mentions
-- Use `/unwatch` to remove streamers
-- Use `/list` to see all configured streamers with their channels and roles
-
-The old commands are no longer supported in the new version.
 
 ## Command Deployment
 
