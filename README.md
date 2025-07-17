@@ -13,7 +13,7 @@ Multiple streamers can be added to the watch list, and each one can be assigned 
 * Monitors Twitch streamers and posts on discord when they're live.
 * Per-channel configuration: Each streamer can be configured for specific channels. Multiple streamers can be configured for the same channel as well.
 * Per-role mentions: Each streamer can optionally have specific roles mentioned when they go live.
-* Continously updates streamer card in the channel with uptime/game changes + screenshot.
+* Continously updates streamer card in the channel with uptime/category changes + screenshot.
 * Deletes its own message from channel when streamer goes offline.
 * Uses Discord slash commands to add/remove/list/reset watched streamers (`/watch`, `/unwatch`, `/list`, `/reset`).
 

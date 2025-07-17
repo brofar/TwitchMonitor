@@ -266,7 +266,7 @@ class bot {
     channel.send({ content: messageText, embeds: [msgContent] })
       .then(async (message) => {
         await db.AddMessage(guildId, channelId, message.id, streamer.user_login);
-        log.log(className, '[SendLiveMessage]', `[${streamer.user_name}]`, `Sent to #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Game ${streamer.game_name} | Title: ${streamer.title}`);
+        log.log(className, '[SendLiveMessage]', `[${streamer.user_name}]`, `Sent to #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Category ${streamer.game_name} | Title: ${streamer.title}`);
       })
       .catch((e) => {
         log.warn(className, '[SendLiveMessage]', `Send error for ${streamer.user_name} in ${channel.guild.name}: ${e.message}.`);
@@ -292,7 +292,7 @@ class bot {
       .then((message) => {
         message.edit({ content: messageText, embeds: [msgContent] })
           .then((message) => {
-            log.log(className, '[UpdateMessage]', `[${streamer.user_name}]`, `Updated #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Game ${streamer.game_name} | Title: ${streamer.title}`);
+            log.log(className, '[UpdateMessage]', `[${streamer.user_name}]`, `Updated #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Category ${streamer.game_name} | Title: ${streamer.title}`);
           })
           .catch((e) => {
             log.warn(className, '[UpdateMessage]', `Edit error for ${streamer.user_name} in ${channel.guild.name}: ${e.message}.`);
@@ -331,9 +331,9 @@ class bot {
         { name: "Title", value: streamer.title, inline: false }
       );
 
-    // Add game
+    // Add Category if available
     if (streamer.game_name) {
-      msgEmbed.addFields({ name: "Game", value: streamer.game_name, inline: false });
+      msgEmbed.addFields({ name: "Category", value: streamer.game_name, inline: false });
     }
 
     // Add status
