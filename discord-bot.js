@@ -47,7 +47,6 @@ class bot {
     // Discord bot connected
     client.on('ready', () => {
       log.log(className, `Bot logged in as ${client.user.tag}.`);
-      this.Purge();
     });
 
     // Discord bot added to a server
@@ -185,7 +184,7 @@ class bot {
         discordDeleteSuccess = true;
       } catch (err) {
         log.error(className, `[DeleteMessages] Error deleting Discord message:`, err);
-        
+
         // Remove from DB if error is unrecoverable
         const unrecoverableErrors = [
           "Unknown Message", // message deleted
@@ -241,15 +240,6 @@ class bot {
   }
 
   /**
-   * Delete all of the bot's discord messages in all guilds
-   */
-  async Purge() {
-    let messages = await db.GetMessages();
-    this.DeleteMessages(messages);
-    log.log(className, '[Purge]', `Purged all messages.`);
-  }
-
-  /**
    * Create a discord message
    */
   async SendLiveMessage(guildId, channelId, roleid, streamer) {
@@ -269,7 +259,11 @@ class bot {
         log.log(className, '[SendLiveMessage]', `[${streamer.user_name}]`, `Sent to #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Category ${streamer.game_name} | Title: ${streamer.title}`);
       })
       .catch((e) => {
-        log.warn(className, '[SendLiveMessage]', `Send error for ${streamer.user_name} in ${channel.guild.name}: ${e.message}.`);
+        log.warn(className, '[SendLiveMessage]', `Send error for ${streamer.user_name} in ${channel.guild.name}: ${e.code} // ${e.message}.`);
+        if (e.code === 10003 /* Unknown Channel */ || e.code === 10008 /* Unknown Message */ || e.code === 10004 /* Unknown Guild */) {
+          db.DeleteMessage(guildId, channelId, message.id)
+            .then(() => log.log(className, '[SendLiveMessage]', `Deleted message from DB due to error.`));
+        }
         log.error(className, e);
       });
   }
@@ -290,7 +284,7 @@ class bot {
 
     channel.messages.fetch(messageId)
       .then((message) => {
-        message.edit({ content: messageText, embeds: [msgContent] })
+        message.edit({ embeds: [msgContent] })
           .then((message) => {
             log.log(className, '[UpdateMessage]', `[${streamer.user_name}]`, `Updated #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Category ${streamer.game_name} | Title: ${streamer.title}`);
           })
@@ -300,11 +294,10 @@ class bot {
       })
       .catch(async (e) => {
         // Unable to retrieve message object
-        if (e.message === "Unknown Message") {
-          // Specific error: the message does not exist, most likely deleted.
+        if (e.code === 10003 /* Unknown Channel */ || e.code === 10008 /* Unknown Message */ || e.code === 10004 /* Unknown Guild */) {
           // Delete the message from the DB so a new one is created next time.
-          //this.SendLiveMessage(guildId, channelId, streamer);
-          await db.DeleteMessage(guildId, messageId);
+          db.DeleteMessage(guildId, messageId)
+            .then(() => log.log(className, '[SendLiveMessage]', `Deleted message from DB due to error.`));
           return;
         } else {
           // Some other error, log it.
