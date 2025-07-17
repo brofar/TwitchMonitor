@@ -1,5 +1,5 @@
 /* General */
-const { SlashCommandBuilder, MessageFlags, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 
 /* Local */
 const log = require('../log');
@@ -8,7 +8,10 @@ const db = require('../db');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('list')
-    .setDescription('Lists all the streamers Twitch Monitor is tracking.'),
+    .setDescription('Lists all the streamers Twitch Monitor is tracking.')
+    
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+
   async execute(interaction) {
     let watchedUsers = await db.ListStreamers(interaction.guild.id);
 

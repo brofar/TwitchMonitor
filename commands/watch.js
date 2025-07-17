@@ -1,5 +1,5 @@
 /* General */
-const { SlashCommandBuilder, MessageFlags, EmbedBuilder, ChannelType } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, EmbedBuilder, ChannelType, PermissionFlagsBits } = require('discord.js');
 
 /* Local */
 const log = require('../log');
@@ -9,6 +9,8 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('watch')
     .setDescription(`Adds one or more streamers to the watch list (space separated).`)
+
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
 
     .addChannelOption(option =>
       option.setName('channel')

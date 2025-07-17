@@ -1,5 +1,5 @@
 /* General */
-const { SlashCommandBuilder, MessageFlags, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 
 /* Local */
 const log = require('../log');
@@ -9,13 +9,17 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('reset')
     .setDescription('Removes ALL streamers and configurations from this server.')
+
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+
     .addBooleanOption(option =>
       option.setName('confirm')
         .setDescription('Confirm that you want to remove ALL streamers from this server.')
         .setRequired(true)),
+        
   async execute(interaction) {
     const confirmed = interaction.options.getBoolean('confirm');
-    
+
     if (!confirmed) {
       return interaction.reply({
         content: "❌ You must confirm that you want to remove ALL streamers from this server by setting the 'confirm' option to `True`.",
@@ -27,7 +31,7 @@ module.exports = {
       // Get current streamers before resetting
       const currentStreamers = await db.ListStreamers(interaction.guild.id);
       const streamerCount = currentStreamers.length;
-      
+
       if (streamerCount === 0) {
         return interaction.reply({
           content: "ℹ️ No streamers are currently being watched in this server.",

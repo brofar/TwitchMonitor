@@ -1,5 +1,5 @@
 /* General */
-const { SlashCommandBuilder, MessageFlags, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 
 /* Local */
 const log = require('../log');
@@ -9,10 +9,14 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('unwatch')
     .setDescription(`Removes one or more streamers from the watch list (space separated).`)
+
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+
     .addStringOption(option =>
       option.setName('streamers')
         .setDescription('Streamer usernames, space separated.')
         .setRequired(true)),
+
   async execute(interaction) {
     let removals = [];
 

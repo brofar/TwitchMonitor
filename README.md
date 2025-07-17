@@ -67,6 +67,8 @@ A server (this guide uses Ubuntu) where you have sudo.
 
 ## Commands
 
+Commands can only be used by members who have the `Manage Guild` or `Administrator` permissions. Why? Because users are configuring bot behavior for the entire server.
+
 ### `/watch`
 *Adds one or more Twitch streamers to the watch list for a specific channel with optional role mentions.*
 

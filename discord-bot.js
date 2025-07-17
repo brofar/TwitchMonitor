@@ -76,7 +76,7 @@ class bot {
     // Discord sees a message
     client.on(Discord.Events.InteractionCreate, async interaction => {
       // If the sender isn't an admin, ignore.
-      if (!interaction.member.permissions.has("MANAGE_CHANNELS") && !interaction.member.permissions.has("ADMINISTRATOR")) return;
+      if (!interaction.member.permissions.has("MANAGE_GUILD") && !interaction.member.permissions.has("ADMINISTRATOR")) return;
       if (typeof interaction.guild.id === 'undefined') return;
 
       const command = interaction.client.commands.get(interaction.commandName);
