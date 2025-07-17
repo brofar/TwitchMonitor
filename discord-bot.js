@@ -285,7 +285,7 @@ class bot {
     // If a role is specified, mention it in the message
     let messageText = null;
     if (roleid) {
-      messageText = `<@&${roleid}>`;
+      messageText = `<@&${roleid}> ${streamer.user_name} is live!`;
     }
 
     channel.messages.fetch(messageId)
