@@ -53,7 +53,8 @@ class db {
       const monitor = await sql`CREATE TABLE IF NOT EXISTS monitor (
                 guildid VARCHAR(60) NOT NULL,
                 channelid VARCHAR(60) NOT NULL,
-                roleid VARCHAR(60) NOT NULL,
+                roleid VARCHAR(60),
+                message TEXT,
                 streamer VARCHAR(60) NOT NULL,
                 PRIMARY KEY (guildId, channelId, streamer)
             );`
@@ -137,7 +138,7 @@ class db {
       // Only insert the new ones
       if (results.added.length > 0) {
         const toInsert = streamers.filter(s => results.added.includes(s.streamer));
-        await sql`INSERT INTO monitor ${sql(toInsert, 'guildid', 'channelid', 'roleid', 'streamer')}`;
+        await sql`INSERT INTO monitor ${sql(toInsert, 'guildid', 'channelid', 'roleid', 'message', 'streamer')}`;
       }
     } catch (e) {
       log.warn(className, `Couldn't add streamers.`);

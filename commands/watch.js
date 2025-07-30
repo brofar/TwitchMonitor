@@ -25,7 +25,11 @@ module.exports = {
     .addRoleOption(option =>
       option.setName('role')
         .setDescription('[OPTIONAL] Which role to ping with the live notifications.')
-        .setRequired(false)),
+        .setRequired(false))
+    .addStringOption(option =>
+      option.setName('message')
+        .setDescription('The message to send alongside the live notification.')
+        .setRequired(true)),
 
   async execute(interaction) {
     let result = { "added": [], "skipped": [], "duplicates": [] };
@@ -36,6 +40,7 @@ module.exports = {
     let users = interaction.options.getString('streamers');
     let channel = interaction.options.getChannel('channel');
     let role = interaction.options.getRole('role');
+    let message = interaction.options.getString('message');
 
     // Validation: Ensure the selected channel is in the same guild
     if (channel.guild.id !== interaction.guild.id) {
@@ -95,6 +100,7 @@ module.exports = {
         guildid: interaction.guild.id,
         channelid: channel.id,
         roleid: role ? role.id : null,
+        message: message ? message : null,
         streamer: userToAdd
       });
     }
