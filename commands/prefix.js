@@ -23,12 +23,12 @@ class Prefix {
         let newPrefix = args[0].toString().trim().charAt(0);
         await db.UpdateGuild(_guild.guildid, 'prefix', newPrefix);
 
-        let msgEmbed = new Discord.MessageEmbed()
+        let msgEmbed = new Discord.EmbedBuilder()
             .setColor("#FD6A02")
             .setTitle(`**Twitch Monitor**`)
-            .addField(`Prefix`, `Bot prefix set to ${newPrefix}`, true);
+            .addFields({ name: `Prefix`, value: `Bot prefix set to ${newPrefix}`, inline: true });
 
-        message.channel.send(msgEmbed)
+        message.channel.send({ embeds: [msgEmbed] })
             .then((message) => {
                 log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `Set bot prefix to ${newPrefix}.`)
             })

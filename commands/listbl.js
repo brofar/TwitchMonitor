@@ -20,19 +20,17 @@ class ListBl {
 
     watchedUsers.sort();
 
-    let msgEmbed = new Discord.MessageEmbed();
+    let msgEmbed = new Discord.EmbedBuilder();
 
     msgEmbed.setColor("#FD6A02");
     msgEmbed.setTitle(`**Twitch Monitor**`);
-    msgEmbed.addField(`Blacklist (${watchedUsers.length})`, watchedUsers.length > 0 ? watchedUsers.join('\n') : "None", true);
-
-    let msgToSend = "";
+    msgEmbed.addFields({ name: `Blacklist (${watchedUsers.length})`, value: watchedUsers.length > 0 ? watchedUsers.join('\n') : "None", inline: true });
 
     let msgOptions = {
-      embed: msgEmbed
+      embeds: [msgEmbed]
     };
 
-    message.channel.send(msgToSend, msgOptions)
+    message.channel.send(msgOptions)
       .then((message) => {
         log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${watchedUsers.length} blacklist users listed.`);
       })

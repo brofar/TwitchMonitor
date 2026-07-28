@@ -57,20 +57,18 @@ class AddBl {
         result.added.sort();
         result.skipped.sort();
 
-        let msgEmbed = new Discord.MessageEmbed();
+        let msgEmbed = new Discord.EmbedBuilder();
 
         msgEmbed.setColor("#FD6A02");
         msgEmbed.setTitle(`**Twitch Monitor**`);
-        msgEmbed.addField(`Added (${result.added.length})`, result.added.length > 0 ? result.added.join('\n') : "None", true);
-        msgEmbed.addField(`Skipped (${result.skipped.length})`, result.skipped.length > 0 ? result.skipped.join('\n') : "None", true);
-
-        let msgToSend = "";
+        msgEmbed.addFields({ name: `Added (${result.added.length})`, value: result.added.length > 0 ? result.added.join('\n') : "None", inline: true });
+        msgEmbed.addFields({ name: `Skipped (${result.skipped.length})`, value: result.skipped.length > 0 ? result.skipped.join('\n') : "None", inline: true });
 
         let msgOptions = {
-            embed: msgEmbed
+            embeds: [msgEmbed]
         };
 
-        message.channel.send(msgToSend, msgOptions)
+        message.channel.send(msgOptions)
             .then((message) => {
                 log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${result.added.length} added to blacklist. ${result.skipped.length} duplicates.`)
             })

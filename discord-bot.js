@@ -246,7 +246,7 @@ class bot {
         let msgContent = this.CreateMessage(streamer);
 
 
-        channel.send('', { embed: msgContent })
+        channel.send({ embeds: [msgContent] })
             .then(async (message) => {
                 await db.AddMessage(guildId, channelId, message.id, streamer.user_login);
                 log.log(className, '[SendLiveMessage]', `Sent announcement to #${channel.name} on ${channel.guild.name} for ${streamer.user_name}.`);
@@ -262,7 +262,7 @@ class bot {
         let msgContent = this.CreateMessage(streamer);
         channel.messages.fetch(messageId)
             .then((message) => {
-                message.edit('', { embed: msgContent })
+                message.edit({ embeds: [msgContent] })
                     .then((message) => {
                         log.log(className, '[UpdateMessage]', `Updated announcement in #${channel.name} on ${channel.guild.name} for ${streamer.user_name}.`);
                     })
@@ -288,7 +288,7 @@ class bot {
      *
      */
     CreateMessage(streamer) {
-        let msgEmbed = new Discord.MessageEmbed();
+        let msgEmbed = new Discord.EmbedBuilder();
         msgEmbed.setColor("#9146ff");
         msgEmbed.setURL(`https://twitch.tv/${streamer.user_login.toLowerCase()}`);
 
@@ -299,13 +299,13 @@ class bot {
 
         // Stream title
         msgEmbed.setTitle(`:red_circle: **${streamer.user_name} is live on Twitch!**`);
-        msgEmbed.addField("Title", streamer.title, false);
+        msgEmbed.addFields({ name: "Title", value: streamer.title });
 
         // Game
-        if (streamer.game_name) msgEmbed.addField("Game", streamer.game_name, false);
+        if (streamer.game_name) msgEmbed.addFields({ name: "Game", value: streamer.game_name });
 
         // Status
-        msgEmbed.addField("Status", `Live / ${streamer.viewer_count} viewers`, true);
+        msgEmbed.addFields({ name: "Status", value: `Live / ${streamer.viewer_count} viewers`, inline: true });
 
         // Set main image (stream preview)
         let imageUrl = streamer.thumbnail_url;
@@ -319,18 +319,22 @@ class bot {
         let now = moment();
         let startedAt = moment(streamer.started_at);
 
-        msgEmbed.addField("Uptime", humanizeDuration(now - startedAt, {
-            delimiter: ", ",
-            largest: 2,
-            round: true,
-            units: ["y", "mo", "w", "d", "h", "m"]
-        }), true);
+        msgEmbed.addFields({
+            name: "Uptime",
+            value: humanizeDuration(now - startedAt, {
+                delimiter: ", ",
+                largest: 2,
+                round: true,
+                units: ["y", "mo", "w", "d", "h", "m"]
+            }),
+            inline: true
+        });
 
         // Stream tags
-        msgEmbed.addField("Tags", streamer.tags.join(", "));
+        msgEmbed.addFields({ name: "Tags", value: streamer.tags.join(", ") });
 
         // Last updated, so we know if it's stagnant
-        msgEmbed.setFooter(`Last updated ${moment().format('LTS ZZ')}`);
+        msgEmbed.setFooter({ text: `Last updated ${moment().format('LTS ZZ')}` });
 
         return msgEmbed;
     }

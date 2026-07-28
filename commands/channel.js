@@ -35,7 +35,7 @@ class Channel {
 
         // Update the channel config
         if (channel) {
-            if (channel.type == 'text') {
+            if (channel.type === Discord.ChannelType.GuildText) {
                 await db.UpdateGuild(_guild.guildid, 'channelid', channel.id);
                 returnMessage = `Channel set to ${channel.name}.`;
             } else {
@@ -45,19 +45,17 @@ class Channel {
             returnMessage = `Please mention a channel to set. (${prefix}${command} #channelname)`;
         }
 
-        let msgEmbed = new Discord.MessageEmbed();
+        let msgEmbed = new Discord.EmbedBuilder();
 
         msgEmbed.setColor("#FD6A02");
         msgEmbed.setTitle(`**Twitch Monitor**`);
-        msgEmbed.addField(`${command}`, returnMessage, true);
-
-        let msgToSend = "";
+        msgEmbed.addFields({ name: `${command}`, value: returnMessage, inline: true });
 
         let msgOptions = {
-            embed: msgEmbed
+            embeds: [msgEmbed]
         };
 
-        message.channel.send(msgToSend, msgOptions)
+        message.channel.send(msgOptions)
             .then((message) => {
                 log.log(`[${this.name.toString().trim()}]`, `[${message.guild.name}]`, `${returnMessage}`)
             })
