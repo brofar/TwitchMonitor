@@ -34,19 +34,19 @@ class bot {
         let client = this.client;
 
         // Discord bot connected
-        client.on('ready', () => {
+        client.on(Discord.Events.ClientReady, () => {
             log.log(className, `Bot logged in as ${client.user.tag}.`);
             this.Purge();
         });
 
         // Discord bot added to a server
-        client.on("guildCreate", async guild => {
+        client.on(Discord.Events.GuildCreate, async guild => {
             await db.NewGuild(guild.id);
             log.log(className, `[${guild.name}]`, `Bot joined a new server: ${guild.name}`);
         });
 
         // Discord bot removed from a server
-        client.on("guildDelete", async guild => {
+        client.on(Discord.Events.GuildDelete, async guild => {
             await db.KillGuild(guild.id);
             log.log(className, `Removed from a server: ${guild.name}`);
         });
@@ -59,13 +59,13 @@ class bot {
         });
 
         // Discord bot disconnected
-        client.on("disconnect", message => {
+        client.on(Discord.Events.Disconnect, message => {
             log.error(className, `Bot disconnected. Attempting to reconnect.`);
             client.login(process.env.DISCORD_BOT_TOKEN);
         });
 
         // Discord sees a message
-        client.on('message', async message => {
+        client.on(Discord.Events.MessageCreate, async message => {
             // Empty or bot message
             if (!message.content || message.author.bot) return;
 
