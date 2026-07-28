@@ -65,7 +65,7 @@ class bot {
         });
 
         // Discord bot disconnected
-        client.on(Discord.Events.Disconnect, message => {
+        client.on(Discord.Events.ShardDisconnect, message => {
             log.error(className, `Bot disconnected. Attempting to reconnect.`);
             client.login(process.env.DISCORD_BOT_TOKEN);
         });
@@ -82,7 +82,7 @@ class bot {
             if (!txtLower.length) return;
 
             // If the sender isn't an admin, ignore.
-            if (!message.member.hasPermission("MANAGE_CHANNELS") && !message.member.hasPermission("ADMINISTRATOR")) return;
+            if (!message.member.permissions.has(Discord.PermissionsBitField.Flags.ManageGuild) && !message.member.permissions.has(Discord.PermissionsBitField.Flags.Administrator)) return;
 
             // Get the guild in which the message was sent
             let _guild = await db.GetConfig(message.guild.id);
@@ -128,7 +128,7 @@ class bot {
     UpdateWatchStatus(numStreams) {
         let activity = `${numStreams} speedrun${numStreams == 1 ? "" : "s"}`;
         this.client.user.setActivity(activity, {
-            "type": "WATCHING"
+            "type": Discord.ActivityType.Watching
         });
 
         log.log(className, '[UpdateWatchStatus]', `Updated current activity: Watching ${activity}.`);
