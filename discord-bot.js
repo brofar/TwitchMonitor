@@ -45,7 +45,7 @@ class bot {
     let client = this.client;
 
     // Discord bot connected
-    client.on('ready', () => {
+    client.on(Discord.Events.ClientReady, () => {
       log.log(className, `Bot logged in as ${client.user.tag}.`);
     });
 
@@ -61,14 +61,14 @@ class bot {
     });
 
     // Discord bot has an error
-    client.on('error', err => {
+    client.on(Discord.Events.Error, err => {
       log.error(className, 'Error encountered. Logging back in.');
       log.error(err);
       client.login(process.env.DISCORD_BOT_TOKEN);
     });
 
     // Discord bot disconnected
-    client.on("disconnect", message => {
+    client.on(Discord.Events.Disconnect, message => {
       log.error(className, `Bot disconnected. Attempting to reconnect.`);
       client.login(process.env.DISCORD_BOT_TOKEN);
     });
@@ -187,11 +187,11 @@ class bot {
 
         // Remove from DB if error is unrecoverable
         const unrecoverableErrors = [
-          "Unknown Message", // message deleted
-          "Missing Access",  // bot removed from server or channel
-          "Missing Permissions"
+          Discord.RESTJSONErrorCodes.UnknownMessage, // message deleted
+          Discord.RESTJSONErrorCodes.MissingAccess,  // bot removed from server or channel
+          Discord.RESTJSONErrorCodes.MissingPermissions
         ];
-        if (err && err.message && unrecoverableErrors.some(e => err.message.includes(e))) {
+        if (err && err.code && unrecoverableErrors.includes(err.code)) {
           discordDeleteSuccess = true;
         }
       }
@@ -200,6 +200,7 @@ class bot {
       if (discordDeleteSuccess) {
         try {
           await db.DeleteMessage(message.guildid, message.messageid);
+          log.log(className, `[DeleteMessages] Deleted DB reference for ${message.streamer} in guild ${message.guildid}.`);
         } catch (err) {
           log.error(className, `[DeleteMessages] Error deleting message from DB:`, err);
         }
@@ -226,7 +227,9 @@ class bot {
           .then(msg => log.log(className, `Deleted message from ${msg.guild.name}.`))
           .catch(err => log.error(className, err));
       })
-      .catch(err => log.error(className, err));
+      .catch(err => {
+          log.error(className, `[DeleteMessage] Error deleting message (${err.code}):`, err);
+        });
   }
 
   /**
