@@ -68,7 +68,7 @@ class bot {
     });
 
     // Discord bot disconnected
-    client.on(Discord.Events.Disconnect, message => {
+    client.on(Discord.Events.ShardDisconnect, message => {
       log.error(className, `Bot disconnected. Attempting to reconnect.`);
       client.login(process.env.DISCORD_BOT_TOKEN);
     });
@@ -263,10 +263,6 @@ class bot {
       })
       .catch((e) => {
         log.warn(className, '[SendLiveMessage]', `Send error for ${streamer.user_name} in ${channel.guild.name}: ${e.code} // ${e.message}.`);
-        if (e.code === 10003 /* Unknown Channel */ || e.code === 10008 /* Unknown Message */ || e.code === 10004 /* Unknown Guild */) {
-          db.DeleteMessage(guildId, channelId, message.id)
-            .then(() => log.log(className, '[SendLiveMessage]', `Deleted message from DB due to error.`));
-        }
         log.error(className, e);
       });
   }
