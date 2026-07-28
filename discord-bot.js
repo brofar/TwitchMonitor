@@ -16,7 +16,13 @@ class bot {
         // Initialize the DB.
         await db.Init();
 
-        this.client = new Discord.Client();
+        this.client = new Discord.Client({
+            intents: [
+                Discord.GatewayIntentBits.Guilds,
+                Discord.GatewayIntentBits.GuildMessages,
+                Discord.GatewayIntentBits.MessageContent
+            ]
+        });
         this.client.commands = new Discord.Collection();
 
         // Find all the commands we have
