@@ -140,7 +140,15 @@ class bot {
     // Streamers deleted from a guild's watch list.
     let deletedStreamers = messages.filter(element => monitorList.findIndex(e => element.streamer == e.streamer && element.guildid == e.guildid) === -1);
 
-    let messagesToDelete = [...offlineStreamers, ...deletedStreamers];
+    // A streamer can match both filters above (e.g. offline AND no longer watched),
+    // so dedupe to avoid processing/deleting the same Discord message twice.
+    const seenMessages = new Set();
+    let messagesToDelete = [...offlineStreamers, ...deletedStreamers].filter(m => {
+      const key = `${m.guildid}:${m.channelid}:${m.messageid}`;
+      if (seenMessages.has(key)) return false;
+      seenMessages.add(key);
+      return true;
+    });
     this.DeleteMessages(messagesToDelete);
 
     //***** 2. Announcing Stage *****/
@@ -200,7 +208,8 @@ class bot {
       if (discordDeleteSuccess) {
         try {
           await db.DeleteMessage(message.guildid, message.messageid);
-          log.log(className, `[DeleteMessages] Deleted DB reference for ${message.streamer} in guild ${message.guildid}.`);
+          const guildName = this.client.guilds.cache.get(message.guildid)?.name ?? message.guildid;
+          log.log(className, `[DeleteMessages] Deleted DB reference for ${message.streamer} in guild ${guildName}.`);
         } catch (err) {
           log.error(className, `[DeleteMessages] Error deleting message from DB:`, err);
         }
@@ -220,16 +229,11 @@ class bot {
     let channel = await this.GetChannel(guildId, channelId);
     if (!channel) return;
 
-    channel.messages.fetch(messageId)
-      .then((existingMsg) => {
-        // Delete the message from discord
-        existingMsg.delete()
-          .then(msg => log.log(className, `Deleted message from ${msg.guild.name}.`))
-          .catch(err => log.error(className, err));
-      })
-      .catch(err => {
-          log.error(className, `[DeleteMessage] Error deleting message (${err.code}):`, err);
-        });
+    // force: true avoids treating a stale cached message as still present on Discord
+    const existingMsg = await channel.messages.fetch({ message: messageId, force: true });
+    await existingMsg.delete();
+    const guildName = existingMsg.guild?.name ?? existingMsg.guild.id;
+    log.log(className, `Deleted message from ${guildName}.`);
   }
 
   /**
@@ -285,7 +289,7 @@ class bot {
       .then((message) => {
         message.edit({ embeds: [msgContent] })
           .then((message) => {
-            log.log(className, '[UpdateMessage]', `[${streamer.user_name}]`, `Updated #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Category ${streamer.game_name} | Title: ${streamer.title}`);
+            log.log(className, '[UpdateMessage]', `[${streamer.user_name}]`, `Updated #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Category ${streamer.game_name}`);
           })
           .catch((e) => {
             log.warn(className, '[UpdateMessage]', `Edit error for ${streamer.user_name} in ${channel.guild.name}: ${e.message}.`);
