@@ -191,8 +191,33 @@ class bot {
      */
     async DeleteMessages(messages) {
         for (const message of messages) {
-            this.DeleteMessage(message.guildid, message.channelid, message.messageid);
-            await db.DeleteMessage(message.guildid, message.messageid);
+            // Remove from Discord
+            let discordDeleteSuccess = false;
+            try {
+                await this.DeleteMessage(message.guildid, message.channelid, message.messageid);
+                discordDeleteSuccess = true;
+            } catch (err) {
+                log.error(className, `[DeleteMessages] Error deleting Discord message:`, err);
+
+                // Remove from DB if error is unrecoverable
+                const unrecoverableErrors = [
+                    Discord.RESTJSONErrorCodes.UnknownMessage, // message deleted
+                    Discord.RESTJSONErrorCodes.MissingAccess,  // bot removed from server or channel
+                    Discord.RESTJSONErrorCodes.MissingPermissions
+                ];
+                if (err && err.code && unrecoverableErrors.includes(err.code)) {
+                    discordDeleteSuccess = true;
+                }
+            }
+
+            // Remove from DB only if discord delete succeeded or error is unrecoverable
+            if (discordDeleteSuccess) {
+                try {
+                    await db.DeleteMessage(message.guildid, message.messageid);
+                } catch (err) {
+                    log.error(className, `[DeleteMessages] Error deleting message from DB:`, err);
+                }
+            }
         }
     }
 
@@ -208,14 +233,10 @@ class bot {
         let channel = await this.GetChannel(guildId, channelId);
         if (!channel) return;
 
-        channel.messages.fetch(messageId)
-            .then((existingMsg) => {
-                // Delete the message from discord
-                existingMsg.delete()
-                    .then(msg => log.log(className, `Deleted message from ${msg.guild.name}.`))
-                    .catch(err => log.error(className, err));
-            })
-            .catch(err => log.error(className, err));
+        // force: true avoids treating a stale cached message as still present on Discord
+        const existingMsg = await channel.messages.fetch({ message: messageId, force: true });
+        await existingMsg.delete();
+        log.log(className, `Deleted message from ${existingMsg.guild.name}.`);
     }
 
     /**
@@ -251,6 +272,10 @@ class bot {
                 await db.AddMessage(guildId, channelId, message.id, streamer.user_login);
                 log.log(className, '[SendLiveMessage]', `Sent announcement to #${channel.name} on ${channel.guild.name} for ${streamer.user_name}.`);
             })
+            .catch((e) => {
+                log.warn(className, '[SendLiveMessage]', `Send error for ${streamer.user_name} in ${channel.guild.name}: ${e.code} // ${e.message}.`);
+                log.error(className, e);
+            });
     }
 
     /**
@@ -272,12 +297,14 @@ class bot {
             })
             .catch(async (e) => {
                 // Unable to retrieve message object
-                if (e.message === "Unknown Message") {
-                    // Specific error: the message does not exist, most likely deleted.
+                if (e.code === 10003 /* Unknown Channel */ || e.code === 10008 /* Unknown Message */ || e.code === 10004 /* Unknown Guild */) {
                     // Delete the message from the DB so a new one is created next time.
-                    //this.SendLiveMessage(guildId, channelId, streamer);
                     await db.DeleteMessage(guildId, messageId);
+                    log.log(className, '[UpdateMessage]', `Deleted message from DB due to error.`);
                     return;
+                } else {
+                    // Some other error, log it.
+                    log.error(className, '[UpdateMessage]', `Error fetching/updating Discord message ${messageId} in ${channel.guild.name}: ${e.message}.`);
                 }
             });
     }
