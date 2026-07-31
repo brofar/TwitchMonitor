@@ -39,10 +39,16 @@ class bot {
         // alias for ease of use
         let client = this.client;
 
+        // Resolved once the first ClientReady-triggered Purge finishes, so init()
+        // can block the Twitch poller from racing a fresh SendLiveMessage against Purge.
+        let resolveFirstPurge;
+        const firstPurge = new Promise(resolve => { resolveFirstPurge = resolve; });
+
         // Discord bot connected
-        client.on(Discord.Events.ClientReady, () => {
+        client.on(Discord.Events.ClientReady, async () => {
             log.log(className, `Bot logged in as ${client.user.tag}.`);
-            this.Purge();
+            await this.Purge();
+            resolveFirstPurge();
         });
 
         // Discord bot added to a server
@@ -117,6 +123,12 @@ class bot {
         // Now that all the event handlers are declared, actually log in.
         log.log(className, 'Logging in to Discord.');
         await client.login(process.env.DISCORD_BOT_TOKEN);
+
+        // Wait for the startup Purge to fully finish before returning control.
+        // Otherwise the Twitch poller's first refresh can send/update a live
+        // message while Purge is still deleting the previous session's messages,
+        // and Purge can end up deleting the brand-new message out from under it.
+        await firstPurge;
     }
 
     /**
@@ -254,7 +266,7 @@ class bot {
      */
     async Purge() {
         let messages = await db.GetMessages();
-        this.DeleteMessages(messages);
+        await this.DeleteMessages(messages);
         log.log(className, '[Purge]', `Purged all messages.`);
     }
 
@@ -285,13 +297,19 @@ class bot {
         let channel = await this.GetChannel(guildId, channelId);
         if (!channel) return;
         let msgContent = this.CreateMessage(streamer);
-        channel.messages.fetch(messageId)
+        // force: true avoids treating a stale cached message as still present on Discord
+        channel.messages.fetch({ message: messageId, force: true })
             .then((message) => {
                 message.edit({ embeds: [msgContent] })
                     .then((message) => {
                         log.log(className, '[UpdateMessage]', `Updated announcement in #${channel.name} on ${channel.guild.name} for ${streamer.user_name}.`);
                     })
-                    .catch((e) => {
+                    .catch(async (e) => {
+                        if (e.code === 10003 /* Unknown Channel */ || e.code === 10008 /* Unknown Message */ || e.code === 10004 /* Unknown Guild */) {
+                            await db.DeleteMessage(guildId, messageId);
+                            log.log(className, '[UpdateMessage]', `Deleted message from DB due to error.`);
+                            return;
+                        }
                         log.warn(className, '[UpdateMessage]', `Edit error for ${streamer.user_name} in ${channel.guild.name}: ${e.message}.`);
                     });
             })
