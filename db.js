@@ -105,6 +105,14 @@ class db {
   }
 
   /**
+   * Distinct (guild, channel) pairs currently configured for announcements.
+   */
+  static async GetMonitoredChannels() {
+    const channels = await sql`SELECT DISTINCT guildid, channelid FROM monitor`
+    return Promise.resolve(channels);
+  }
+
+  /**
    * Removes a config for a guild
    */
   static async KillGuild(guildId) {

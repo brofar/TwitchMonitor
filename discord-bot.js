@@ -44,9 +44,23 @@ class bot {
     // alias for ease of use
     let client = this.client;
 
+    // Resolved once the first-run orphan cleanup finishes, so init() can block
+    // the Twitch poller from racing a fresh SendLiveMessage against the scan.
+    let resolveFirstCleanup;
+    const firstCleanup = new Promise(resolve => { resolveFirstCleanup = resolve; });
+
+    // ClientReady can fire more than once (the error/ShardDisconnect handlers
+    // below re-login on reconnect). Only run the orphan scan on the very first
+    // ready - running it again later would race against the live Twitch poller.
+    let cleanupStarted = false;
+
     // Discord bot connected
-    client.on(Discord.Events.ClientReady, () => {
+    client.on(Discord.Events.ClientReady, async () => {
       log.log(className, `Bot logged in as ${client.user.tag}.`);
+      if (cleanupStarted) return;
+      cleanupStarted = true;
+      await this.CleanupOrphanedMessages();
+      resolveFirstCleanup();
     });
 
     // Discord bot added to a server
@@ -102,6 +116,48 @@ class bot {
     // Now that all the event handlers are declared, actually log in.
     log.log(className, 'Logging in to Discord.');
     await client.login(process.env.DISCORD_BOT_TOKEN);
+
+    // Wait for the startup orphan cleanup to fully finish before returning control.
+    // Otherwise the Twitch poller's first refresh could send a live message that
+    // the still-running scan then deletes, mistaking it for an untracked orphan.
+    await firstCleanup;
+  }
+
+  /**
+   * One-time startup reconciliation: delete any of the bot's own messages in its
+   * configured announcement channels that have no matching `livemessages` row.
+   * Catches messages orphaned by a crash between channel.send() and db.AddMessage(),
+   * or by manual DB edits. Runs once on the first ClientReady only, to keep Discord
+   * API usage down.
+   */
+  async CleanupOrphanedMessages() {
+    const channels = await db.GetMonitoredChannels();
+    const trackedMessages = await db.GetMessages();
+    const trackedIds = new Set(trackedMessages.map(m => m.messageid));
+
+    for (const { guildid, channelid } of channels) {
+      const channel = await this.GetChannel(guildid, channelid);
+      if (!channel) continue;
+
+      let recentMessages;
+      try {
+        recentMessages = await channel.messages.fetch({ limit: 100 });
+      } catch (e) {
+        log.warn(className, '[CleanupOrphanedMessages]', `Failed to fetch messages for #${channel.name} in ${channel.guild.name}: ${e.message}.`);
+        continue;
+      }
+
+      const orphans = recentMessages.filter(m => m.author.id === this.client.user.id && !trackedIds.has(m.id));
+
+      for (const orphan of orphans.values()) {
+        try {
+          await orphan.delete();
+          log.log(className, '[CleanupOrphanedMessages]', `Deleted orphaned message in #${channel.name} (${channel.guild.name}).`);
+        } catch (e) {
+          log.warn(className, '[CleanupOrphanedMessages]', `Failed to delete orphaned message ${orphan.id}: ${e.message}.`);
+        }
+      }
+    }
   }
 
   /**
@@ -285,13 +341,19 @@ class bot {
       messageText = `<@&${roleid}> ${streamer.user_name} is live!`;
     }
 
-    channel.messages.fetch(messageId)
+    // force: true avoids treating a stale cached message as still present on Discord
+    channel.messages.fetch({ message: messageId, force: true })
       .then((message) => {
         message.edit({ embeds: [msgContent] })
           .then((message) => {
             log.log(className, '[UpdateMessage]', `[${streamer.user_name}]`, `Updated #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Category ${streamer.game_name}`);
           })
-          .catch((e) => {
+          .catch(async (e) => {
+            if (e.code === 10003 /* Unknown Channel */ || e.code === 10008 /* Unknown Message */ || e.code === 10004 /* Unknown Guild */) {
+              await db.DeleteMessage(guildId, messageId);
+              log.log(className, '[UpdateMessage]', `Deleted message from DB due to error.`);
+              return;
+            }
             log.warn(className, '[UpdateMessage]', `Edit error for ${streamer.user_name} in ${channel.guild.name}: ${e.message}.`);
           });
       })
@@ -300,7 +362,7 @@ class bot {
         if (e.code === 10003 /* Unknown Channel */ || e.code === 10008 /* Unknown Message */ || e.code === 10004 /* Unknown Guild */) {
           // Delete the message from the DB so a new one is created next time.
           db.DeleteMessage(guildId, messageId)
-            .then(() => log.log(className, '[SendLiveMessage]', `Deleted message from DB due to error.`));
+            .then(() => log.log(className, '[UpdateMessage]', `Deleted message from DB due to error.`));
           return;
         } else {
           // Some other error, log it.
