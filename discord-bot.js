@@ -161,6 +161,38 @@ class bot {
   }
 
   /**
+   * Console command: list the servers the bot is currently in.
+   */
+  ListGuilds() {
+    const guilds = [...this.client.guilds.cache.values()];
+    log.log(className, `In ${guilds.length} server${guilds.length == 1 ? "" : "s"}:`);
+    for (const guild of guilds) {
+      log.log(className, `${guild.id}  ${guild.name} (${guild.memberCount} members)`);
+    }
+  }
+
+  /**
+   * Console command: offboard a server - delete its live messages, leave it, and
+   * drop its config. The GuildDelete handler also calls KillGuild; it's idempotent.
+   *
+   * @param {string} guildId  Guild ID
+   */
+  async LeaveGuild(guildId) {
+    const guild = this.client.guilds.cache.get(guildId);
+    if (!guild) {
+      log.warn(className, `[LeaveGuild]`, `Not in a server with ID ${guildId}.`);
+      return;
+    }
+
+    const messages = await db.GetMessages();
+    await this.DeleteMessages(messages.filter(m => m.guildid === guildId));
+
+    await guild.leave();
+    await db.KillGuild(guildId);
+    log.log(className, `[LeaveGuild]`, `Left ${guild.name} (${guildId}) and removed its config.`);
+  }
+
+  /**
    * Updates the discord bot's activity to "Watching x stream(s)"
    * 
    * @param {number} numStreams  Number of streams the bot is watching.
