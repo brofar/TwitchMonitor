@@ -1,16 +1,35 @@
 /* General */
 const Discord = require('discord.js');
-const path = require('node:path');
-const fs = require('node:fs');
-const moment = require('moment');
 const humanizeDuration = require("humanize-duration");
 
 /* Local */
 const log = require('./log');
 const db = require('./db');
+const commands = require('./load-commands');
 
 
 const className = '[Discord]';
+
+// The target is gone for good - safe to drop our DB row for it.
+const GONE_ERRORS = [
+  Discord.RESTJSONErrorCodes.UnknownChannel,
+  Discord.RESTJSONErrorCodes.UnknownGuild,
+  Discord.RESTJSONErrorCodes.UnknownMessage,
+];
+
+// What the bot needs to announce a stream at all.
+const REQUIRED_PERMS = ['ViewChannel', 'SendMessages', 'EmbedLinks'];
+
+// Nice to have: ManageMessages tidies the channel, MentionEveryone is only needed
+// when a configured role isn't set mentionable.
+const OPTIONAL_PERMS = ['ManageMessages', 'MentionEveryone', 'Administrator'];
+
+// Deleting will never succeed on a retry either, so drop the DB row regardless.
+const UNRECOVERABLE_DELETE_ERRORS = [
+  ...GONE_ERRORS,
+  Discord.RESTJSONErrorCodes.MissingAccess,  // bot removed from server or channel
+  Discord.RESTJSONErrorCodes.MissingPermissions,
+];
 
 class bot {
   async init() {
@@ -24,22 +43,8 @@ class bot {
       ],
     });
 
-    this.client.commands = new Discord.Collection();
-
-    // Grab all the command folders from the commands directory
-    const commandsPath = path.join(__dirname, 'commands');
-    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
-    // Set a new item in the Collection with the key as the command name and the value as the exported module
-    for (const file of commandFiles) {
-      const filePath = path.join(commandsPath, file);
-      const command = require(filePath);
-      if ('data' in command && 'execute' in command) {
-        this.client.commands.set(command.data.name, command);
-      } else {
-        console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-      }
-    }
+    // Key the Collection by command name
+    this.client.commands = new Discord.Collection(commands.map(c => [c.data.name, c]));
 
     // alias for ease of use
     let client = this.client;
@@ -89,9 +94,12 @@ class bot {
 
     // Discord sees a message
     client.on(Discord.Events.InteractionCreate, async interaction => {
-      // If the sender isn't an admin, ignore.
-      if (!interaction.member.permissions.has("MANAGE_GUILD") && !interaction.member.permissions.has("ADMINISTRATOR")) return;
-      if (typeof interaction.guild.id === 'undefined') return;
+      // Commands configure the whole server, so they're Manage Guild only.
+      // setDefaultMemberPermissions(ManageGuild) covers the default case, but a
+      // guild admin can override that per-command in Server Settings > Integrations,
+      // so re-check here. Administrator satisfies has() on its own.
+      if (!interaction.guild) return;
+      if (!interaction.memberPermissions?.has(Discord.PermissionFlagsBits.ManageGuild)) return;
 
       const command = interaction.client.commands.get(interaction.commandName);
 
@@ -136,7 +144,7 @@ class bot {
     const trackedIds = new Set(trackedMessages.map(m => m.messageid));
 
     for (const { guildid, channelid } of channels) {
-      const channel = await this.GetChannel(guildid, channelid);
+      const channel = this.GetChannel(guildid, channelid);
       if (!channel) continue;
 
       let recentMessages;
@@ -161,13 +169,53 @@ class bot {
   }
 
   /**
-   * Console command: list the servers the bot is currently in.
+   * Which of the permissions the bot cares about a given set actually grants.
+   * Administrator satisfies has() on its own, so it reports as OK.
+   *
+   * @param {?Discord.PermissionsBitField} perms
+   * @return {string}  'OK', or 'MISSING x, y', with any optional extras appended.
    */
-  ListGuilds() {
+  static DescribePerms(perms) {
+    if (!perms) return 'unknown';
+
+    const held = name => perms.has(Discord.PermissionFlagsBits[name]);
+    const missing = REQUIRED_PERMS.filter(p => !held(p));
+    const optional = OPTIONAL_PERMS.filter(held);
+    const extras = optional.length ? ` (+${optional.join(', ')})` : '';
+
+    return (missing.length ? `MISSING ${missing.join(', ')}` : 'OK') + extras;
+  }
+
+  /**
+   * Console command: list the servers the bot is in, with the access it has in
+   * each - server-wide first, then per announcement channel, since a channel
+   * overwrite is the usual reason a guild looks fine but nothing gets posted.
+   */
+  async ListGuilds() {
     const guilds = [...this.client.guilds.cache.values()];
+    const monitored = await db.GetMonitoredChannels();
+
     log.log(className, `In ${guilds.length} server${guilds.length == 1 ? "" : "s"}:`);
+
     for (const guild of guilds) {
+      const me = guild.members.me;
       log.log(className, `${guild.id}  ${guild.name} (${guild.memberCount} members)`);
+      log.log(className, `    server-wide: ${bot.DescribePerms(me?.permissions)}`);
+
+      const channels = monitored.filter(m => m.guildid === guild.id);
+      if (!channels.length) {
+        log.log(className, `    no announcement channels configured`);
+        continue;
+      }
+
+      for (const { channelid } of channels) {
+        const channel = guild.channels.cache.get(channelid);
+        if (!channel) {
+          log.log(className, `    ${channelid}: configured but no longer exists`);
+          continue;
+        }
+        log.log(className, `    #${channel.name}: ${bot.DescribePerms(me && channel.permissionsFor(me))}`);
+      }
     }
   }
 
@@ -225,8 +273,15 @@ class bot {
     // Streamers in discord messages but no longer live (messages to be deleted)
     let offlineStreamers = messages.filter(element => !streamerNames.includes(element.streamer));
 
-    // Streamers deleted from a guild's watch list.
-    let deletedStreamers = messages.filter(element => monitorList.findIndex(e => element.streamer == e.streamer && element.guildid == e.guildid) === -1);
+    // Streamers deleted from a guild's watch list. Keyed on channel too, matching
+    // the announcing stage below - without it, a card left in an unwatched channel
+    // is never cleaned up while the streamer is still watched elsewhere in the guild.
+    let deletedStreamers = messages.filter(element =>
+      monitorList.findIndex(e =>
+        element.streamer == e.streamer &&
+        element.guildid == e.guildid &&
+        element.channelid == e.channelid
+      ) === -1);
 
     // A streamer can match both filters above (e.g. offline AND no longer watched),
     // so dedupe to avoid processing/deleting the same Discord message twice.
@@ -280,16 +335,7 @@ class bot {
         discordDeleteSuccess = true;
       } catch (err) {
         log.error(className, `[DeleteMessages] Error deleting Discord message:`, err);
-
-        // Remove from DB if error is unrecoverable
-        const unrecoverableErrors = [
-          Discord.RESTJSONErrorCodes.UnknownMessage, // message deleted
-          Discord.RESTJSONErrorCodes.MissingAccess,  // bot removed from server or channel
-          Discord.RESTJSONErrorCodes.MissingPermissions
-        ];
-        if (err && err.code && unrecoverableErrors.includes(err.code)) {
-          discordDeleteSuccess = true;
-        }
+        if (UNRECOVERABLE_DELETE_ERRORS.includes(err?.code)) discordDeleteSuccess = true;
       }
 
       // Remove from DB only if discord delete succeeded or error is unrecoverable
@@ -314,7 +360,7 @@ class bot {
    *
    */
   async DeleteMessage(guildId, channelId, messageId) {
-    let channel = await this.GetChannel(guildId, channelId);
+    let channel = this.GetChannel(guildId, channelId);
     if (!channel) return;
 
     // force: true avoids treating a stale cached message as still present on Discord
@@ -327,80 +373,60 @@ class bot {
   /**
    * Get a discord channel object
    */
-  async GetChannel(guildId, channelId) {
-    let guild = this.client.guilds.cache.get(guildId);
-    if (!guild) return;
-    let channel = guild.channels.cache.get(channelId);
-    return channel;
+  GetChannel(guildId, channelId) {
+    return this.client.guilds.cache.get(guildId)?.channels.cache.get(channelId);
+  }
+
+  /**
+   * The live card for a stream, pinging roleid if one is configured.
+   */
+  BuildPayload(roleid, streamer) {
+    return {
+      content: roleid ? `<@&${roleid}> ${streamer.user_name} is live!` : null,
+      embeds: [this.CreateMessage(streamer)]
+    };
   }
 
   /**
    * Create a discord message
    */
   async SendLiveMessage(guildId, channelId, roleid, streamer) {
-    let channel = await this.GetChannel(guildId, channelId);
+    let channel = this.GetChannel(guildId, channelId);
     if (!channel) return;
-    let msgContent = this.CreateMessage(streamer);
 
-    // If a role is specified, mention it in the message
-    let messageText = null;
-    if (roleid) {
-      messageText = `<@&${roleid}> ${streamer.user_name} is live!`;
+    try {
+      const message = await channel.send(this.BuildPayload(roleid, streamer));
+      await db.AddMessage(guildId, channelId, message.id, streamer.user_login);
+      log.log(className, '[SendLiveMessage]', `[${streamer.user_name}]`, `Sent to #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Category ${streamer.game_name} | Title: ${streamer.title}`);
+    } catch (e) {
+      log.warn(className, '[SendLiveMessage]', `Send error for ${streamer.user_name} in ${channel.guild.name}: ${e.code} // ${e.message}.`);
+      log.error(className, e);
     }
-
-    channel.send({ content: messageText, embeds: [msgContent] })
-      .then(async (message) => {
-        await db.AddMessage(guildId, channelId, message.id, streamer.user_login);
-        log.log(className, '[SendLiveMessage]', `[${streamer.user_name}]`, `Sent to #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Category ${streamer.game_name} | Title: ${streamer.title}`);
-      })
-      .catch((e) => {
-        log.warn(className, '[SendLiveMessage]', `Send error for ${streamer.user_name} in ${channel.guild.name}: ${e.code} // ${e.message}.`);
-        log.error(className, e);
-      });
   }
 
   /**
-   * Edit a discord message
+   * Edit a discord message. Only the embed is updated - re-sending content would
+   * re-ping the role on every refresh.
    */
   async UpdateMessage(guildId, channelId, messageId, roleid, streamer) {
-    let channel = await this.GetChannel(guildId, channelId);
+    let channel = this.GetChannel(guildId, channelId);
     if (!channel) return;
-    let msgContent = this.CreateMessage(streamer);
+    const { embeds } = this.BuildPayload(roleid, streamer);
 
-    // If a role is specified, mention it in the message
-    let messageText = null;
-    if (roleid) {
-      messageText = `<@&${roleid}> ${streamer.user_name} is live!`;
+    try {
+      // force: true avoids treating a stale cached message as still present on Discord
+      const message = await channel.messages.fetch({ message: messageId, force: true });
+      await message.edit({ embeds });
+      log.log(className, '[UpdateMessage]', `[${streamer.user_name}]`, `Updated #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Category ${streamer.game_name}`);
+    } catch (e) {
+      if (GONE_ERRORS.includes(e.code)) {
+        // Delete the message from the DB so a new one is created next time.
+        await db.DeleteMessage(guildId, messageId);
+        log.log(className, '[UpdateMessage]', `Deleted message from DB due to error ${e.code}.`);
+        return;
+      }
+      log.error(className, '[UpdateMessage]', `Error updating Discord message ${messageId} in ${channel.guild.name}: ${e.message}.`);
     }
-
-    // force: true avoids treating a stale cached message as still present on Discord
-    channel.messages.fetch({ message: messageId, force: true })
-      .then((message) => {
-        message.edit({ embeds: [msgContent] })
-          .then((message) => {
-            log.log(className, '[UpdateMessage]', `[${streamer.user_name}]`, `Updated #${channel.name} in ${channel.guild.name} | Viewers: ${streamer.viewer_count} | Category ${streamer.game_name}`);
-          })
-          .catch(async (e) => {
-            if (e.code === 10003 /* Unknown Channel */ || e.code === 10008 /* Unknown Message */ || e.code === 10004 /* Unknown Guild */) {
-              await db.DeleteMessage(guildId, messageId);
-              log.log(className, '[UpdateMessage]', `Deleted message from DB due to error.`);
-              return;
-            }
-            log.warn(className, '[UpdateMessage]', `Edit error for ${streamer.user_name} in ${channel.guild.name}: ${e.message}.`);
-          });
-      })
-      .catch(async (e) => {
-        // Unable to retrieve message object
-        if (e.code === 10003 /* Unknown Channel */ || e.code === 10008 /* Unknown Message */ || e.code === 10004 /* Unknown Guild */) {
-          // Delete the message from the DB so a new one is created next time.
-          db.DeleteMessage(guildId, messageId)
-            .then(() => log.log(className, '[UpdateMessage]', `Deleted message from DB due to error.`));
-          return;
-        } else {
-          // Some other error, log it.
-          log.error(className, '[UpdateMessage]', `Error fetching/updating Discord message ${messageId} in ${channel.guild.name}: ${e.message}.`);
-        }
-      });
   }
 
   /**
@@ -438,11 +464,8 @@ class bot {
     msgEmbed.setImage(imageUrl);
 
     // Add uptime
-    let now = moment();
-    let startedAt = moment(streamer.started_at);
-
     msgEmbed.addFields({
-      name: "Uptime", value: humanizeDuration(now - startedAt, {
+      name: "Uptime", value: humanizeDuration(Date.now() - new Date(streamer.started_at), {
         delimiter: ", ",
         largest: 2,
         round: true,

@@ -1,4 +1,4 @@
-const Dotenv = require('dotenv').config();
+require('dotenv/config');
 const LOG_LEVEL = process.env.LOG_LEVEL;
 
 class Log {

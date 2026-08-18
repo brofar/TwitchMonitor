@@ -1,17 +1,13 @@
 {
   "dependencies": {
-    "axios": "^1.7.9",
     "discord.js": "^14.17.3",
     "dotenv": "^8.2.0",
-    "events": "^3.3.0",
-    "fs": "^0.0.1-security",
     "humanize-duration": "^3.25.2",
-    "moment": "^2.29.1",
     "postgres": "^3.3.2"
   },
   "scripts": {
     "start": "node app.js",
-    "migrate": "node migrate-db.js",
-    "deploy": "node deploy-commands.js"
+    "deploy": "node deploy-commands.js",
+    "test": "node test.js"
   }
 }

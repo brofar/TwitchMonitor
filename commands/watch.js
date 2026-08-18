@@ -4,6 +4,7 @@ const { SlashCommandBuilder, MessageFlags, EmbedBuilder, ChannelType, Permission
 /* Local */
 const log = require('../log');
 const db = require('../db');
+const parseNames = require('./_names');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -29,8 +30,6 @@ module.exports = {
 
   async execute(interaction) {
     let result = { "added": [], "skipped": [], "duplicates": [] };
-
-    let adds = [];
 
     // Grab the streamer names from the user's command
     let users = interaction.options.getString('streamers');
@@ -73,31 +72,15 @@ module.exports = {
       });
     }
 
-    // Loop through all users for users to add to the list
-    for (const user of users.split(' ')) {
-      let userToAdd = user.toString().trim().toLowerCase();
+    const { names, invalid } = parseNames(users);
+    result.skipped = invalid;
 
-      // Remove the '@' symbol if it exists.
-      if (userToAdd.charAt(0) === '@') {
-        userToAdd = userToAdd.substring(1);
-      }
-
-      // Whitespace or blank message
-      if (!userToAdd.length) continue;
-
-      // Skip if name is too long to be a Twitch account.
-      if (userToAdd.length > 30) {
-        result.skipped.push(userToAdd);
-        continue;
-      }
-
-      adds.push({
-        guildid: interaction.guild.id,
-        channelid: channel.id,
-        roleid: role ? role.id : null,
-        streamer: userToAdd
-      });
-    }
+    const adds = names.map(streamer => ({
+      guildid: interaction.guild.id,
+      channelid: channel.id,
+      roleid: role ? role.id : null,
+      streamer
+    }));
 
     // Add streamers to database and get results
     const dbResults = await db.AddStreamers(adds);

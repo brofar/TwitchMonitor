@@ -31,7 +31,7 @@ bot.client = client;
 
 client.once(Discord.Events.ClientReady, async () => {
   try {
-    if (cmd === 'servers') bot.ListGuilds();
+    if (cmd === 'servers') await bot.ListGuilds();
     else await bot.LeaveGuild(guildId);
   } catch (err) {
     log.error(className, `Command '${cmd}' failed:`, err);

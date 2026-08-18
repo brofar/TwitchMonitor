@@ -1,6 +1,5 @@
 /* General */
-const Dotenv = require('dotenv').config();
-const axios = require('axios');
+require('dotenv/config');
 
 /* Local */
 const discordBot = require('./discord-bot');
@@ -14,9 +13,7 @@ const log = require('./log');
     let bot = new discordBot();
     await bot.init();
 
-    let twitch = new twitchBot();
-
-    twitch.on('streamer-refresh', (streamers) => {
+    let twitch = new twitchBot((streamers) => {
         bot.UpdateWatchStatus(streamers.length);
         bot.ProcessStreams(streamers);
     });

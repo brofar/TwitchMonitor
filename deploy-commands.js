@@ -8,25 +8,10 @@ definitions - you're free to modify parts such as the execute function as much a
 */
 
 const { REST, Routes } = require('discord.js');
-const Dotenv = require('dotenv').config();
-const fs = require('node:fs');
-const path = require('node:path');
-
-const commands = [];
-// Grab all the command folders from the commands directory
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+require('dotenv/config');
 
 // Grab the SlashCommandBuilder#toJSON() output of each command's data for deployment
-for (const file of commandFiles) {
-  const filePath = path.join(commandsPath, file);
-  const command = require(filePath);
-  if ('data' in command && 'execute' in command) {
-    commands.push(command.data.toJSON());
-  } else {
-    console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-  }
-}
+const commands = require('./load-commands').map(command => command.data.toJSON());
 
 // Construct and prepare an instance of the REST module
 const rest = new REST().setToken(process.env.DISCORD_BOT_TOKEN);

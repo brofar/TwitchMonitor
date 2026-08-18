@@ -4,6 +4,7 @@ const { SlashCommandBuilder, MessageFlags, EmbedBuilder, PermissionFlagsBits } =
 /* Local */
 const log = require('../log');
 const db = require('../db');
+const parseNames = require('./_names');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -18,26 +19,11 @@ module.exports = {
         .setRequired(true)),
 
   async execute(interaction) {
-    let removals = [];
-
     // Grab the streamer names from the user's command
-    let users = interaction.options.getString('streamers');
+    const { names: removals } = parseNames(interaction.options.getString('streamers'));
 
-    // Loop through all users for users to add to the list
-    for (const user of users.split(' ')) {
-      let userToDelete = user.toString().trim().toLowerCase();
-
-      // Remove the '@' symbol if it exists.
-      if (userToDelete.charAt(0) === '@') {
-        userToDelete = userToDelete.substring(1);
-      }
-
-      // Whitespace or blank message
-      if (!userToDelete.length) continue;
-
-      await db.RemStreamer(interaction.guild.id, userToDelete);
-
-      removals.push(userToDelete);
+    for (const streamer of removals) {
+      await db.RemStreamer(interaction.guild.id, streamer);
     }
 
     removals.sort();
